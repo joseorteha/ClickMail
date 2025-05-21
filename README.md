@@ -53,13 +53,7 @@ npm run dev
 
 Las contribuciones son bienvenidas. Por favor, abre un issue primero para discutir los cambios que te gustaría hacer.
 
-## 📝 Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
-
-## 👨‍💻 Autor
-
-- José Ortega - [@joseorteha](https://github.com/joseorteha)
 
 ---
 ⭐️ Si te gusta este proyecto, ¡déjale una estrella en GitHub!
