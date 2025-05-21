@@ -1,5 +1,3 @@
-import Navbar from '../../components/common/Navbar';
-import Footer from '../../components/common/Footer';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -25,7 +23,7 @@ const Register = () => {
     }
     try {
       // Simulación de registro exitoso
-      login({ name, email });
+      login(email, password);
       navigate('/dashboard');
     } catch (err) {
       setError('Error al registrar usuario');
@@ -34,7 +32,6 @@ const Register = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-blue-100 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
-      <Navbar />
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-12">
         <form onSubmit={handleSubmit} className="bg-white/90 dark:bg-gray-900/90 rounded-xl shadow-lg p-8 max-w-md w-full flex flex-col gap-6">
           <h2 className="text-2xl font-bold text-center text-indigo-700 dark:text-indigo-300">Crear cuenta en ClickMail</h2>
@@ -84,9 +81,8 @@ const Register = () => {
           </div>
         </form>
       </main>
-      <Footer />
     </div>
   );
 };
 
-export default Register; 
+export default Register;

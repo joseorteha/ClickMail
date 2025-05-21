@@ -1,17 +1,17 @@
 import React, { Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
-import Home from '../pages/Home';
+import Landing from '../pages/Landing';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import Dashboard from '../pages/Dashboard';
 import NotFound from '../pages/NotFound';
 
-const CreateCampaign = React.lazy(() => import('../pages/campaign/CreateCampaign'));
+const CreateCampaign = React.lazy(() => import('../pages/CreateCampaign'));
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Home />,
+    element: <Landing />,
   },
   {
     path: '/login',

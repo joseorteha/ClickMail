@@ -1,14 +1,16 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
-import Home from './pages/Home';
+import Landing from './pages/Landing';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Dashboard from './pages/Dashboard';
 import CreateCampaign from './pages/CreateCampaign';
+import CampaignDetails from './pages/campaign/CampaignDetails';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 
@@ -17,13 +19,14 @@ function App() {
     <Router>
       <ThemeProvider>
         <AuthProvider>
-          <div className="flex flex-col min-h-screen">
+          <ToastProvider>
+            <div className="flex flex-col min-h-screen">
             <Navbar />
             <main className="flex-grow">
               <Routes>
                 <Route path="/" element={
                   <ProtectedRoute requireAuth={false}>
-                    <Home />
+                    <Landing />
                   </ProtectedRoute>
                 } />
                 <Route path="/login" element={
@@ -46,6 +49,11 @@ function App() {
                     <CreateCampaign />
                   </ProtectedRoute>
                 } />
+                <Route path="/campaign/:id" element={
+                  <ProtectedRoute>
+                    <CampaignDetails />
+                  </ProtectedRoute>
+                } />
                 <Route path="/profile" element={
                   <ProtectedRoute>
                     <Profile />
@@ -55,7 +63,8 @@ function App() {
               </Routes>
             </main>
             <Footer />
-          </div>
+            </div>
+          </ToastProvider>
         </AuthProvider>
       </ThemeProvider>
     </Router>
