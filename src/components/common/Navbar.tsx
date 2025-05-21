@@ -39,9 +39,11 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center transition-transform group-hover:scale-110">
-            <span className="text-white font-bold text-sm">W</span>
-          </div>
+          <img 
+            src="/logo1.svg" 
+            alt="ClickMail Logo" 
+            className="w-10 h-10 transition-transform group-hover:scale-110" 
+          />
           {isLanding && (
             <div className="flex flex-col">
               <span className="text-lg font-bold text-blue-600 dark:text-blue-400 leading-none">ClickMail</span>

@@ -12,10 +12,17 @@ const Landing = () => {
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="flex flex-col md:flex-row items-center justify-between gap-12">
           <div className="md:w-1/2">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white">
-              Wizard<br />
-              Solution
-            </h1>
+            <div className="flex items-center mb-4">
+              <img 
+                src="/logo1.svg" 
+                alt="Wizard Solution Logo" 
+                className="w-16 h-16 md:w-20 md:h-20 mr-3" 
+              />
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white">
+                Wizard<br />
+                Solution
+              </h1>
+            </div>
             <p className="text-2xl md:text-3xl mt-4 text-gray-600 dark:text-gray-300">
               presenta
             </p>
