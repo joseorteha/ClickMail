@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Card from '../components/ui/Card';
-import { MailIcon, EditIcon, TrashIcon, PlusIcon } from '../components/ui/Icons';
+import { MailIcon, EditIcon, TrashIcon, PlusIcon, InfoIcon } from '../components/ui/Icons';
+import { driver } from 'driver.js';
+import 'driver.js/dist/driver.css';
 
 // Simulación de datos para el dashboard
 const mockCampaigns = [
@@ -11,13 +13,24 @@ const mockCampaigns = [
   { id: '3', name: 'Recordatorio Suscripción', date: '2025-05-10', status: 'Programada', description: 'Recordatorio de renovación de suscripción mensual.' },
 ];
 
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState(mockCampaigns);
   const [notification, setNotification] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [tutorialCompleted, setTutorialCompleted] = useState(() => {
+    // Verificar si el usuario ya completó el tutorial
+    return localStorage.getItem('tutorialCompleted') === 'true';
+  });
+  
+  // Referencias para los elementos del tutorial
+  const headerRef = useRef<HTMLDivElement>(null);
+  const createCampaignRef = useRef<HTMLAnchorElement>(null);
+  const campaignsListRef = useRef<HTMLDivElement>(null);
+  const campaignActionsRef = useRef<HTMLDivElement>(null);
+  const featuresRef = useRef<HTMLDivElement>(null);
   
   // Manejar mensajes de notificación (ej. después de eliminar una campaña)
   useEffect(() => {
@@ -50,131 +63,182 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
-
+  
+  // Iniciar el tutorial paso a paso
+  const startTutorial = () => {
+    const driverObj = driver({
+      showProgress: true,
+      animate: true,
+      allowClose: true,
+      stagePadding: 10,
+      nextBtnText: 'Siguiente',
+      prevBtnText: 'Anterior',
+      doneBtnText: 'Finalizar',
+      steps: [
+        // Paso 1: Bienvenida
+        {
+          element: '#dashboard-header',
+          popover: {
+            title: 'Bienvenido a tu Dashboard',
+            description: 'Aquí podrás gestionar todas tus campañas de email marketing y aprovechar la IA para mejorar tus resultados.',
+            side: 'bottom',
+            align: 'center'
+          }
+        },
+        // Paso 2: Crear campaña
+        {
+          element: '#create-campaign-btn',
+          popover: {
+            title: 'Crear nueva campaña',
+            description: 'Haz clic aquí para comenzar a crear una nueva campaña utilizando nuestra IA para generar contenido personalizado.',
+            side: 'bottom',
+            align: 'center'
+          }
+        },
+        // Paso 3: Lista de campañas
+        {
+          element: '#campaigns-list',
+          popover: {
+            title: 'Tus campañas',
+            description: 'Aquí puedes ver todas tus campañas, filtrarlas por estado y buscar campañas específicas.',
+            side: 'top',
+            align: 'center'
+          }
+        },
+        // Paso 4: Acciones para campañas
+        {
+          element: '#campaign-actions',
+          popover: {
+            title: 'Acciones rápidas',
+            description: 'Gestiona tus campañas con estas acciones: ver detalles, eliminar o enviar una prueba.',
+            side: 'left',
+            align: 'center'
+          }
+        },
+        // Paso 5: Características
+        {
+          element: '#features-section',
+          popover: {
+            title: 'Características de ClickMail',
+            description: 'Explora todas las herramientas y capacidades de IA que tenemos para ayudarte a crear campañas exitosas.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ],
+      onDestroyed: () => {
+        // Marcar el tutorial como completado
+        localStorage.setItem('tutorialCompleted', 'true');
+        setTutorialCompleted(true);
+        setNotification('¡Tutorial completado! Puedes volver a verlo en la sección de configuración.');
+        
+        // Eliminar la notificación después de 5 segundos
+        setTimeout(() => {
+          setNotification(null);
+        }, 5000);
+      }
+    });
+    
+    driverObj.drive();
+  };
+  
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        {/* Cabecera */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-indigo-700 dark:text-indigo-300">¡Bienvenido, {user?.name || 'Usuario'}!</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-300">Gestiona tus campañas y aprovecha la IA para mejorar tu marketing.</p>
-        </div>
+        {/* Botón del tutorial - solo visible para usuarios nuevos que no han completado el tutorial */}
+        {!tutorialCompleted && (
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={startTutorial}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800/60 transition-colors"
+            >
+              <InfoIcon size={18} />
+              <span>Ver tutorial</span>
+            </button>
+          </div>
+        )}
         
         {/* Notificación */}
         {notification && (
-          <div className="mb-6 bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-md transition-all duration-500 ease-in-out">
+          <div className="mb-4 p-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-md shadow-sm">
             {notification}
           </div>
         )}
         
-        {/* Botones de acción */}
-        <div className="mb-8 flex flex-col md:flex-row gap-4 justify-center">
-          <Link 
-            to="/campaign/create" 
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold text-lg shadow hover:from-indigo-600 hover:to-blue-600 transition"
+        {/* Cabecera */}
+        <div id="dashboard-header" ref={headerRef} className="mb-8 text-center">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-indigo-700 dark:text-indigo-300">¡Bienvenido, {user?.name || 'Usuario'}!</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2 text-lg">Gestiona tus campañas de email marketing con IA</p>
+        </div>
+        
+        {/* Botón de crear campaña */}
+        <div className="mb-8 flex justify-center">
+          <Link
+            id="create-campaign-btn"
+            ref={createCampaignRef}
+            to="/campaign/create"
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-colors"
           >
-            <PlusIcon size={20} /> Crear nueva campaña
+            <PlusIcon size={20} />
+            <span>Crear nueva campaña</span>
           </Link>
         </div>
         
-        {/* Listado de campañas */}
+        {/* Lista de campañas */}
         <Card className="mb-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Tus campañas</h2>
-            <div className="flex gap-2 w-full sm:w-auto">
-              <select 
-                className="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-md text-sm py-1 px-2 w-full sm:w-auto"
-              >
-                <option>Todas</option>
-                <option>Enviadas</option>
-                <option>Borradores</option>
-                <option>Programadas</option>
-              </select>
-            </div>
-          </div>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Tus campañas</h2>
           
-          {/* Sin campañas */}
           {campaigns.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400">No tienes campañas aún. ¡Crea tu primera campaña!</p>
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400 mb-4">Aún no tienes campañas creadas</p>
+              <Link
+                to="/campaign/create"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800/60 rounded-lg transition-colors"
+              >
+                <PlusIcon size={18} />
+                <span>Crear tu primera campaña</span>
+              </Link>
             </div>
           ) : (
             <>
-              {/* Vista de tabla para pantallas medianas y grandes */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-800">
-                    <tr>
-                      <th className="py-3 px-4 text-left">Nombre</th>
-                      <th className="py-3 px-4 text-left">Descripción</th>
-                      <th className="py-3 px-4 text-left">Fecha</th>
-                      <th className="py-3 px-4 text-left">Estado</th>
-                      <th className="py-3 px-4 text-right">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {campaigns.map((campaign) => (
-                      <tr key={campaign.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">{campaign.name}</td>
-                        <td className="py-3 px-4 text-gray-600 dark:text-gray-300 max-w-xs truncate">{campaign.description}</td>
-                        <td className="py-3 px-4 text-gray-600 dark:text-gray-300">{campaign.date}</td>
-                        <td className="py-3 px-4">
-                          <span 
-                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${campaign.status === 'Enviada' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : campaign.status === 'Borrador' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'}`}
-                          >
-                            {campaign.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <div className="flex justify-end items-center space-x-2">
-                            <Link 
-                              to={`/campaign/${campaign.id}`} 
-                              className="p-1 text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200 rounded-full"
-                              title="Ver detalles"
-                            >
-                              <EditIcon size={18} />
-                            </Link>
-                            <button 
-                              onClick={() => handleDelete(campaign.id)}
-                              disabled={loading}
-                              className="p-1 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 rounded-full"
-                              title="Eliminar campaña"
-                            >
-                              <TrashIcon size={18} />
-                            </button>
-                            <button 
-                              className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-200 rounded-full"
-                              title="Enviar prueba"
-                            >
-                              <MailIcon size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="mb-4 flex flex-col sm:flex-row gap-3 justify-between">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Buscar campaña..."
+                    className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                  />
+                </div>
+                <div>
+                  <select className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                    <option value="">Todas las campañas</option>
+                    <option value="Enviada">Enviadas</option>
+                    <option value="Borrador">Borradores</option>
+                    <option value="Programada">Programadas</option>
+                  </select>
+                </div>
               </div>
               
-              {/* Vista de tarjetas para móviles */}
-              <div className="md:hidden space-y-4">
-                {campaigns.map((campaign) => (
-                  <div key={campaign.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{campaign.name}</h3>
-                      <span 
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${campaign.status === 'Enviada' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : campaign.status === 'Borrador' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'}`}
-                      >
-                        {campaign.status}
-                      </span>
-                    </div>
-                    
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{campaign.description}</p>
-                    
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{campaign.date}</span>
-                      
-                      <div className="flex items-center space-x-3">
+              <div id="campaigns-list" ref={campaignsListRef} className="divide-y divide-gray-200 dark:divide-gray-700">
+                {campaigns.map(campaign => (
+                  <div key={campaign.id} className="py-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">{campaign.name}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{campaign.description}</p>
+                        <div className="mt-2 flex items-center gap-3">
+                          <span className="text-xs text-gray-500 dark:text-gray-500">{campaign.date}</span>
+                          <span className={`
+                            text-xs px-2 py-1 rounded-full 
+                            ${campaign.status === 'Enviada' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : ''}
+                            ${campaign.status === 'Borrador' ? 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300' : ''}
+                            ${campaign.status === 'Programada' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' : ''}
+                          `}>
+                            {campaign.status}
+                          </span>
+                        </div>
+                      </div>
+                      <div id="campaign-actions" ref={campaignActionsRef} className="flex items-center gap-2">
                         <Link 
                           to={`/campaign/${campaign.id}`} 
                           className="p-1.5 text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200 rounded-full"
@@ -206,7 +270,7 @@ const Dashboard = () => {
         </Card>
         
         {/* Tarjetas informativas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div id="features-section" ref={featuresRef} className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card hoverable>
             <div className="text-center">
               <div className="mb-3 inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300">
@@ -248,4 +312,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

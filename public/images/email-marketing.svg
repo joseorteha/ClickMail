@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800px" height="600px" viewBox="0 0 800 600" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <!-- Fondo decorativo -->
+        <circle fill="#E0E7FF" cx="400" cy="300" r="250"/>
+        <circle fill="#C7D2FE" cx="400" cy="300" r="200"/>
+        
+        <!-- Envelope principal -->
+        <g transform="translate(250, 150)">
+            <rect fill="#4F46E5" x="0" y="0" width="300" height="200" rx="10"/>
+            <path d="M0,50 L150,150 L300,50" stroke="#FFFFFF" stroke-width="4" fill="none"/>
+            <path d="M0,50 L300,50" stroke="#FFFFFF" stroke-width="4" fill="none"/>
+            <path d="M0,50 L0,200" stroke="#FFFFFF" stroke-width="4" fill="none"/>
+            <path d="M300,50 L300,200" stroke="#FFFFFF" stroke-width="4" fill="none"/>
+            <path d="M0,200 L300,200" stroke="#FFFFFF" stroke-width="4" fill="none"/>
+        </g>
+        
+        <!-- Elementos decorativos -->
+        <g transform="translate(100, 100)">
+            <circle fill="#818CF8" cx="0" cy="0" r="20"/>
+            <circle fill="#6366F1" cx="40" cy="40" r="15"/>
+            <circle fill="#4F46E5" cx="80" cy="0" r="25"/>
+        </g>
+        
+        <g transform="translate(600, 400)">
+            <circle fill="#818CF8" cx="0" cy="0" r="20"/>
+            <circle fill="#6366F1" cx="40" cy="40" r="15"/>
+            <circle fill="#4F46E5" cx="80" cy="0" r="25"/>
+        </g>
+    </g>
+</svg> 
