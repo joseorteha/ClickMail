@@ -1,125 +1,120 @@
-import { useState } from 'react';
+# ClickMail - Rama Backend
 
-export default function App() {
-  const [form, setForm] = useState({
-    product: '',
-    audience: '',
-    goal: '',
-    tone: 'Persuasivo',
-  });
-  const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState('');
+## ¿Qué es ClickMail?
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+ClickMail es una aplicación web para crear campañas de email marketing de forma rápida y sencilla usando inteligencia artificial (IA). Este proyecto está en sus primeras etapas, y en esta rama nos enfocamos en el backend, que incluye un API para conectar las vistas del frontend y generar contenido con IA.
 
-  const generateEmail = async () => {
-    setLoading(true);
-    const prompt = `
-Eres un copywriter experto en email marketing.
-Crea un email para:
-Producto/servicio: ${form.product}
-Audiencia: ${form.audience}
-Objetivo: ${form.goal}
-Tono: ${form.tone}
-Incluye asunto y call‑to‑action.
-    `;
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.8,
-      }),
-    });
-    const data = await res.json();
-    setEmail(data.choices?.[0]?.message?.content || 'Error.');
-    setLoading(false);
-  };
+## Vistas del Frontend (HTML)
 
-  return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
-      <h1 className="text-3xl font-bold mb-6">Email‑Marketing Generator 📧</h1>
+Hemos creado 5 vistas HTML simples que muestran cómo funcionará ClickMail. Cada una representa un paso para crear una campaña de email:
 
-      <div className="bg-white w-full max-w-xl p-6 rounded-2xl shadow">
-        {/* Formulario */}
-        <label className="block mb-3">
-          <span className="font-semibold">Producto / servicio</span>
-          <input
-            name="product"
-            value={form.product}
-            onChange={handleChange}
-            className="mt-1 w-full p-2 border rounded"
-          />
-        </label>
+1. **`step-0.html` (Inicio)**  
+   - Muestra un mensaje de bienvenida y un botón para empezar.  
+   - Tiene un ícono de sobre y un botón azul ("Empezar").  
+   - Llama al endpoint `/start` para iniciar el proceso.
 
-        <label className="block mb-3">
-          <span className="font-semibold">Audiencia</span>
-          <input
-            name="audience"
-            value={form.audience}
-            onChange={handleChange}
-            className="mt-1 w-full p-2 border rounded"
-          />
-        </label>
+2. **`step-1.html` (Describir Producto/Servicio)**  
+   - Pide al usuario que describa su producto o servicio en un cuadro de texto.  
+   - Incluye un ícono de documento y botones para "Regresar" o "Continuar".  
+   - Envía la descripción al endpoint `/describe`.
 
-        <label className="block mb-3">
-          <span className="font-semibold">Objetivo de la campaña</span>
-          <input
-            name="goal"
-            value={form.goal}
-            onChange={handleChange}
-            className="mt-1 w-full p-2 border rounded"
-          />
-        </label>
+3. **`step-2.html` (Definir Audiencia y Objetivo)**  
+   - Permite elegir la audiencia (por ejemplo, "Clientes actuales") y el objetivo (por ejemplo, "Promoción de producto").  
+   - Tiene un ícono de diana y dos menús desplegables.  
+   - Envía los datos al endpoint `/define`.
 
-        <label className="block mb-6">
-          <span className="font-semibold">Tono</span>
-          <select
-            name="tone"
-            value={form.tone}
-            onChange={handleChange}
-            className="mt-1 w-full p-2 border rounded"
-          >
-            <option>Persuasivo</option>
-            <option>Amigable</option>
-            <option>Profesional</option>
-            <option>Urgente</option>
-          </select>
-        </label>
+4. **`step-3.html` (Generar y Editar)**  
+   - Muestra el email generado por la IA y tiene botones para editar, copiar, descargar o enviar (algunos botones aún no funcionan).  
+   - Incluye un ícono de video y un área para previsualizar el email.  
+   - Llama al endpoint `/generate` para obtener el contenido.
 
-        <button
-          onClick={generateEmail}
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition"
-        >
-          {loading ? 'Generando…' : 'Generar email'}
-        </button>
-      </div>
+5. **`step-error.html` (Error)**  
+   - Muestra un mensaje de error si algo sale mal, con un botón para intentar de nuevo.  
+   - Tiene un borde rojo para resaltar el error.  
+   - Llama al endpoint `/error` para obtener el mensaje de error.
 
-      {/* Resultado */}
-      {email && (
-        <div className="mt-8 w-full max-w-xl">
-          <h2 className="text-xl font-semibold mb-2">Resultado</h2>
-          <textarea
-            className="w-full h-60 p-4 border rounded resize-none"
-            value={email}
-            readOnly
-          />
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(email);
-            }}
-            className="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          >
-            Copiar al portapapeles
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+Estas vistas tienen un diseño limpio con fondo blanco, botones azules (#4B91F1) y texto gris oscuro (#333333), inspirado en un diseño de Figma.
+
+## Backend (API)
+
+El backend está hecho con **FastAPI**, un framework de Python para crear APIs. Por ahora, guarda los datos en memoria (más adelante usaremos una base de datos). También simula una integración con IA para generar el contenido del email.
+
+Los endpoints del API son:
+
+- **`/start` (POST)**: Inicia el proceso y limpia los datos.
+- **`/describe` (POST)**: Guarda la descripción del producto o servicio.
+- **`/define` (POST)**: Guarda la audiencia y el objetivo.
+- **`/generate` (POST)**: Genera el email usando IA (por ahora simulado).
+- **`/error` (POST)**: Muestra un mensaje de error.
+
+El código está en el archivo `main.py`.
+
+## Estructura del Proyecto en Python
+
+Proponemos esta estructura simple para organizar el proyecto y facilitar su crecimiento:
+
+```
+clickmail-backend/
+│
+├── src/
+│   ├── main.py             # Archivo principal del API (FastAPI)
+│   ├── endpoints.py        # Define los endpoints del API
+│   ├── models.py           # Modelos para guardar datos (futuro: base de datos)
+│   └── ai_service.py       # Conexión con el servicio de IA
+│
+├── static/
+│   ├── step-0.html         # Vistas HTML
+│   ├── step-1.html
+│   ├── step-2.html
+│   ├── step-3.html
+│   └── step-error.html
+│
+├── requirements.txt        # Dependencias de Python
+└── README.md               # Este archivo
+```
+
+### Explicación de la Estructura
+
+- **`src/`**: Código del backend.
+  - `main.py`: Inicia el API con FastAPI.
+  - `endpoints.py`: Tiene los endpoints (`/start`, `/describe`, etc.).
+  - `models.py`: Define cómo se guardan los datos (por ahora en memoria).
+  - `ai_service.py`: Maneja la conexión con la IA (por ahora simulada).
+- **`static/`**: Archivos HTML (en el futuro, esto podría estar en otro repositorio).
+- **`requirements.txt`**: Lista de paquetes necesarios (como `fastapi`, `uvicorn`, `httpx`).
+
+## Cómo Probar el Proyecto
+
+### Requisitos
+- Python 3.9 o superior
+- Instalar dependencias: `pip install fastapi uvicorn httpx`
+
+### Pasos
+1. Clona el repositorio:
+   ```
+   git clone <url-del-repositorio>
+   cd clickmail-backend
+   ```
+2. Instala las dependencias:
+   ```
+   pip install -r requirements.txt
+   ```
+3. Inicia el API:
+   ```
+   python src/main.py
+   ```
+   El API estará en `http://localhost:8000`.
+
+4. Sirve los archivos HTML:
+   ```
+   cd static
+   python -m http.server 8080
+   ```
+   Abre `http://localhost:8080/step-0.html` en tu navegador.
+
+## Próximos Pasos
+
+- Agregar una base de datos para guardar los datos (por ejemplo, SQLite o PostgreSQL).
+- Conectar con un servicio real de IA (como xAI API en https://x.ai/api).
+- Mejorar las vistas HTML (quizás usando un framework como React).
+- Agregar pruebas para el API.
