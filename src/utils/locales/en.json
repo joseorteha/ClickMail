@@ -1,0 +1,65 @@
+{
+  "navbar": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "campaigns": "Campaigns",
+    "profile": "Profile",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register",
+    "language": "Language"
+  },
+  "login": {
+    "title": "Sign in to your account",
+    "email": "Email",
+    "password": "Password",
+    "remember": "Remember me",
+    "forgot": "Forgot password?",
+    "submit": "Sign In",
+    "no_account": "Don't have an account?",
+    "register_here": "Register here"
+  },
+  "register": {
+    "title": "Create your account",
+    "name": "Full name",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm password",
+    "submit": "Register now",
+    "already_account": "Already have an account?",
+    "login_here": "Sign in here"
+  },
+  "dashboard": {
+    "welcome": "Welcome, {{name}}!",
+    "subtitle": "Manage your email marketing campaigns with AI",
+    "create_campaign": "Create new campaign",
+    "your_campaigns": "Your campaigns",
+    "no_campaigns": "You don't have any campaigns yet",
+    "create_first": "Create your first campaign"
+  },
+  "campaign": {
+    "details": "Campaign details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "send_test": "Send test",
+    "download": "Download",
+    "preview": "Preview",
+    "info": "Information",
+    "created_at": "Created at",
+    "tags": "Tags",
+    "status": "Status"
+  },
+  "profile": {
+    "title": "Profile",
+    "edit": "Edit profile",
+    "logout": "Logout"
+  },
+  "common": {
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading..."
+  }
+} 

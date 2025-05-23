@@ -15,6 +15,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   error: string | null;
+  successMessage: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,15 +30,26 @@ const simulateApiLogin = async (email: string, password: string): Promise<User> 
     throw new Error('Credenciales inválidas');
   }
   
-  // For demo purposes, generate a mock token
-  const mockToken = btoa(`${email}:${Date.now()}`);
+  // Buscar usuario registrado en localStorage
+  const registeredUsers = localStorage.getItem('registered_users');
+  let userData: User | null = null;
   
-  return {
-    id: '1',
-    name: email.split('@')[0],
-    email,
-    token: mockToken
-  };
+  if (registeredUsers) {
+    const users = JSON.parse(registeredUsers);
+    userData = users.find((u: User) => u.email === email);
+  }
+  
+  // Si no existe usuario registrado, usar mock
+  if (!userData) {
+    userData = {
+      id: '1',
+      name: email.split('@')[0],
+      email,
+      token: btoa(`${email}:${Date.now()}`)
+    };
+  }
+  
+  return userData;
 };
 
 const simulateApiRegister = async (name: string, email: string, password: string): Promise<User> => {
@@ -53,21 +65,28 @@ const simulateApiRegister = async (name: string, email: string, password: string
     throw new Error('La contraseña debe tener al menos 8 caracteres');
   }
   
-  // For demo purposes, generate a mock token
-  const mockToken = btoa(`${email}:${Date.now()}`);
+  // Guardar usuario en lista de registrados
+  const registeredUsers = localStorage.getItem('registered_users');
+  const users = registeredUsers ? JSON.parse(registeredUsers) : [];
   
-  return {
+  const newUser = {
     id: '1',
     name,
     email,
-    token: mockToken
+    token: btoa(`${email}:${Date.now()}`)
   };
+  
+  users.push(newUser);
+  localStorage.setItem('registered_users', JSON.stringify(users));
+  
+  return newUser;
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
   // Check for saved user on initial load
   useEffect(() => {
@@ -87,6 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       setError(null);
+      setSuccessMessage(null);
       const userData = await simulateApiLogin(email, password);
       
       // Save user data to localStorage
@@ -104,11 +124,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       setError(null);
+      setSuccessMessage(null);
       const userData = await simulateApiRegister(name, email, password);
       
-      // Save user data to localStorage
-      localStorage.setItem('clickmail_user', JSON.stringify(userData));
-      setUser(userData);
+      // No guardamos el usuario en clickmail_user hasta que haga login
+      setSuccessMessage('¡Registro exitoso! Por favor inicia sesión con tus credenciales.');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error de registro');
       throw e;
@@ -120,6 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     localStorage.removeItem('clickmail_user');
     setUser(null);
+    setSuccessMessage(null);
   };
 
   return (
@@ -131,7 +152,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login, 
         register, 
         logout, 
-        error 
+        error,
+        successMessage
       }}
     >
       {children}

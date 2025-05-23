@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // Iconos mejorados con más estilo
 const SunIcon = (
@@ -34,6 +35,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -92,131 +94,135 @@ const Navbar = () => {
           )}
         </Link>
         
-        {/* Menú de navegación desktop - Versión premium */}
-        <div className="hidden md:flex items-center gap-8">
-          {!user ? (
-            <>
-              <Link 
-                to="/#features" 
-                className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                Características
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
-              </Link>
-              <Link 
-                to="/#pricing" 
-                className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                Precios
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
-              </Link>
-              <Link 
-                to="/#testimonials" 
-                className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                Testimonios
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
-              </Link>
-              <div className="flex items-center gap-4 ml-4">
+        {/* Selector de idioma */}
+        <div className="flex items-center gap-4">
+         
+                   {/* Menú de navegación desktop - Versión premium */}
+          <div className="hidden md:flex items-center gap-8">
+            {!user ? (
+              <>
                 <Link 
-                  to="/login" 
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  to="/#features" 
+                  className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
-                  Iniciar sesión
+                  Características
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
                 </Link>
                 <Link 
-                  to="/register" 
-                  className="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg"
+                  to="/#pricing" 
+                  className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
-                  Comenzar gratis
+                  Precios
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
                 </Link>
-              </div>
-            </>
-          ) : (
-            <>
-              <Link 
-                to="/dashboard" 
-                className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                Inicio
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
-              </Link>
-              <Link 
-                to="/campaign/create" 
-                className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                Nueva Campaña
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
-              </Link>
-              <Link 
-                to="/templates" 
-                className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                Plantillas
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
-              </Link>
-              <div className="flex items-center gap-4 ml-4">
-                <button
-                  onClick={toggleDarkMode}
-                  className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
-                  aria-label="Alternar modo oscuro"
+                <Link 
+                  to="/#testimonials" 
+                  className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
-                  {darkMode ? MoonIcon : SunIcon}
-                </button>
-                <div className="relative group">
-                  <button className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
-                    <div className="w-9 h-9 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-800/20 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800 shadow-sm">
-                      {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </div>
+                  Testimonios
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
+                </Link>
+                <div className="flex items-center gap-4 ml-4">
+                  <Link 
+                    to="/login" 
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    Iniciar sesión
+                  </Link>
+                  <Link 
+                    to="/register" 
+                    className="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg"
+                  >
+                    Comenzar gratis
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link 
+                  to="/dashboard" 
+                  className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Inicio
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
+                </Link>
+                <Link 
+                  to="/campaign/create" 
+                  className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Nueva Campaña
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
+                </Link>
+                <Link 
+                  to="/templates" 
+                  className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Plantillas
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
+                </Link>
+                <div className="flex items-center gap-4 ml-4">
+                  <button
+                    onClick={toggleDarkMode}
+                    className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+                    aria-label="Alternar modo oscuro"
+                  >
+                    {darkMode ? MoonIcon : SunIcon}
                   </button>
-                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden z-50 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 origin-top-right transition-all duration-200 border border-gray-100 dark:border-gray-700">
-                    <div className="p-2 border-b border-gray-100 dark:border-gray-700">
-                      <p className="px-3 py-1.5 text-sm font-medium text-gray-800 dark:text-gray-200">{user.name || 'Usuario'}</p>
-                      <p className="px-3 py-0.5 text-xs text-gray-500 dark:text-gray-400 truncate">{user.email || ''}</p>
-                    </div>
-                    <div className="py-1">
-                      <Link 
-                        to="/profile" 
-                        className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                      >
-                        Configuración
-                      </Link>
-                      <Link 
-                        to="/billing" 
-                        className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                      >
-                        Facturación
-                      </Link>
-                      <button 
-                        onClick={handleLogout} 
-                        className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                      >
-                        Cerrar sesión
-                      </button>
+                  <div className="relative group">
+                    <button className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                      <div className="w-9 h-9 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-800/20 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800 shadow-sm">
+                        {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                    </button>
+                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden z-50 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 origin-top-right transition-all duration-200 border border-gray-100 dark:border-gray-700">
+                      <div className="p-2 border-b border-gray-100 dark:border-gray-700">
+                        <p className="px-3 py-1.5 text-sm font-medium text-gray-800 dark:text-gray-200">{user.name || 'Usuario'}</p>
+                        <p className="px-3 py-0.5 text-xs text-gray-500 dark:text-gray-400 truncate">{user.email || ''}</p>
+                      </div>
+                      <div className="py-1">
+                        <Link 
+                          to="/profile" 
+                          className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                        >
+                          Configuración
+                        </Link>
+                        <Link 
+                          to="/billing" 
+                          className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                        >
+                          Facturación
+                        </Link>
+                        <button 
+                          onClick={handleLogout} 
+                          className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                        >
+                          Cerrar sesión
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </>
-          )}
-        </div>
-        
-        {/* Menú móvil mejorado */}
-        <div className="md:hidden flex items-center gap-3">
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
-            aria-label="Alternar modo oscuro"
-          >
-            {darkMode ? MoonIcon : SunIcon}
-          </button>
-          <button 
-            className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200" 
-            onClick={() => setOpen(!open)} 
-            aria-label="Abrir menú"
-          >
-            {open ? CloseIcon : MenuIcon}
-          </button>
+              </>
+            )}
+          </div>
+          
+          {/* Menú móvil mejorado */}
+          <div className="md:hidden flex items-center gap-3">
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+              aria-label="Alternar modo oscuro"
+            >
+              {darkMode ? MoonIcon : SunIcon}
+            </button>
+            <button 
+              className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200" 
+              onClick={() => setOpen(!open)} 
+              aria-label="Abrir menú"
+            >
+              {open ? CloseIcon : MenuIcon}
+            </button>
+          </div>
         </div>
       </div>
       

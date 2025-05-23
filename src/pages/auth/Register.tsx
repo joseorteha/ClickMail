@@ -16,7 +16,7 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { register, successMessage } = useAuth();
 
   const validateForm = () => {
     if (formData.name.length > 50) {
@@ -42,9 +42,14 @@ const Register = () => {
     
     setIsSubmitting(true);
     try {
-      // Simulación de registro exitoso
-      await login(formData.email, formData.password);
-      navigate('/dashboard');
+      await register(formData.name, formData.email, formData.password);
+      // Redirigir al login después del registro exitoso
+      navigate('/login', { 
+        state: { 
+          message: '¡Registro exitoso! Por favor inicia sesión con tus credenciales.',
+          email: formData.email 
+        }
+      });
     } catch (err) {
       setError('Error al registrar usuario. Por favor intenta nuevamente.');
     } finally {

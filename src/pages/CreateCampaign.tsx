@@ -58,8 +58,21 @@ const CreateCampaign = () => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // Aquí iría la integración con una API real
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Obtener campañas existentes
+      const existingCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
+      
+      // Crear nueva campaña con ID y fecha
+      const newCampaign = {
+        ...campaign,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        status: 'draft'
+      };
+      
+      // Guardar en localStorage
+      localStorage.setItem('campaigns', JSON.stringify([...existingCampaigns, newCampaign]));
+      
+      // Redirigir al dashboard
       navigate('/dashboard');
     } catch (err) {
       setError(true);
@@ -192,6 +205,8 @@ const CreateCampaign = () => {
                 onChange={handleChange} 
                 onBack={handleBack} 
                 onError={handleError}
+                onSubmit={handleSubmit}
+                loading={loading}
               />
             )}
           </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { MailIcon, LockIcon, EyeIcon, EyeOffIcon } from '../../components/ui/Icons';
 import Card from '../../components/ui/Card';
@@ -11,13 +11,40 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const navigate = useNavigate();
-  const { login, error: authError, isAuthenticated } = useAuth();
+  const location = useLocation();
+  const { login, error: authError, isAuthenticated, successMessage: authSuccessMessage } = useAuth();
+
+  // Manejar mensajes de éxito y pre-llenar email si viene del registro
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      if (location.state.email) {
+        setEmail(location.state.email);
+      }
+    }
+  }, [location.state]);
+
+  // Manejar mensajes de error del contexto
+  useEffect(() => {
+    if (authError) {
+      setLocalError(authError);
+    }
+  }, [authError]);
+
+  // Manejar mensajes de éxito del contexto
+  useEffect(() => {
+    if (authSuccessMessage) {
+      setSuccessMessage(authSuccessMessage);
+    }
+  }, [authSuccessMessage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError('');
+    setSuccessMessage(null);
     setIsSubmitting(true);
     try {
       await login(email, password);
@@ -28,12 +55,6 @@ const Login = () => {
       setIsSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    if (authError) {
-      setLocalError(authError);
-    }
-  }, [authError]);
 
   // Redireccionar si ya está autenticado
   if (isAuthenticated) {
@@ -58,6 +79,13 @@ const Login = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="p-8 flex flex-col gap-6">
+              {/* Mensaje de éxito */}
+              {successMessage && (
+                <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-3 text-green-600 dark:text-green-300 text-sm text-center animate-pulse">
+                  {successMessage}
+                </div>
+              )}
+
               <div className="space-y-5">
                 {/* Email Field */}
                 <div className="relative group">
@@ -190,8 +218,7 @@ const Login = () => {
           </Card>
         </div>
       </main>
-
-      </div>
+    </div>
   );
 };
 

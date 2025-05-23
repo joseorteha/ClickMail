@@ -265,6 +265,8 @@ const CampaignDetails = () => {
                 onChange={handleChange} 
                 onBack={() => {}} 
                 onError={() => {}}
+                onSubmit={handleSave}
+                loading={loading}
               />
             ) : (
               <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800 min-h-[120px]">

@@ -5,6 +5,8 @@ interface Props {
   onChange: (data: any) => void;
   onBack: () => void;
   onError: () => void;
+  onSubmit: () => void;
+  loading: boolean;
 }
 
 const defaultEmailHTML = `
@@ -18,7 +20,7 @@ const defaultEmailHTML = `
   </div>
 `;
 
-const Step3Preview = ({ value, onChange, onBack, onError }: Props) => {
+const Step3Preview = ({ value, onChange, onBack, onError, onSubmit, loading }: Props) => {
   const [editing, setEditing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [sent, setSent] = useState(false);
@@ -168,13 +170,14 @@ const Step3Preview = ({ value, onChange, onBack, onError }: Props) => {
           Volver
         </button>
         <button
-          className="w-full sm:w-auto order-1 sm:order-2 mb-3 sm:mb-0 px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-blue-500 text-white font-medium hover:bg-blue-600 transition shadow-sm flex items-center justify-center text-sm sm:text-base"
+          className="w-full sm:w-auto order-1 sm:order-2 mb-3 sm:mb-0 px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-blue-500 text-white font-medium hover:bg-blue-600 transition shadow-sm flex items-center justify-center text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => {
             onChange({ ...value, emailContent: html });
-            // Aquí iría la lógica para finalizar la campaña
+            onSubmit();
           }}
+          disabled={loading}
         >
-          Finalizar campaña
+          {loading ? 'Guardando...' : 'Finalizar campaña'}
         </button>
       </div>
     </div>

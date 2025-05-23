@@ -1,0 +1,65 @@
+{
+  "navbar": {
+    "home": "Inicio",
+    "dashboard": "Panel",
+    "campaigns": "Campañas",
+    "profile": "Perfil",
+    "logout": "Cerrar sesión",
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "language": "Idioma"
+  },
+  "login": {
+    "title": "Inicia sesión en tu cuenta",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "remember": "Recordarme",
+    "forgot": "¿Olvidaste tu contraseña?",
+    "submit": "Iniciar sesión",
+    "no_account": "¿No tienes cuenta?",
+    "register_here": "Regístrate aquí"
+  },
+  "register": {
+    "title": "Crea tu cuenta",
+    "name": "Nombre completo",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirm_password": "Confirmar contraseña",
+    "submit": "Registrarse ahora",
+    "already_account": "¿Ya tienes una cuenta?",
+    "login_here": "Inicia sesión aquí"
+  },
+  "dashboard": {
+    "welcome": "¡Bienvenido, {{name}}!",
+    "subtitle": "Gestiona tus campañas de email marketing con IA",
+    "create_campaign": "Crear nueva campaña",
+    "your_campaigns": "Tus campañas",
+    "no_campaigns": "Aún no tienes campañas creadas",
+    "create_first": "Crea tu primera campaña"
+  },
+  "campaign": {
+    "details": "Detalles de la campaña",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "send_test": "Enviar prueba",
+    "download": "Descargar",
+    "preview": "Vista previa",
+    "info": "Información",
+    "created_at": "Fecha de creación",
+    "tags": "Etiquetas",
+    "status": "Estado"
+  },
+  "profile": {
+    "title": "Perfil",
+    "edit": "Editar perfil",
+    "logout": "Cerrar sesión"
+  },
+  "common": {
+    "back": "Volver",
+    "next": "Siguiente",
+    "finish": "Finalizar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "loading": "Cargando..."
+  }
+} 
