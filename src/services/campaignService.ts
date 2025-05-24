@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8000/api/campaigns';
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/campaigns`;
 
 function getToken(token?: string): string | null {
   return token || localStorage.getItem('token');
