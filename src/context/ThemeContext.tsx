@@ -22,7 +22,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
   }, [darkMode]);
 
-  const toggleDarkMode = () => setDarkMode((d) => !d);
+  const toggleDarkMode = () => setDarkMode((d: boolean) => !d);
 
   return (
     <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
