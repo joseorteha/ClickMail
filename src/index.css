@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Puedes agregar estilos personalizados aquí */
+body {
+  @apply bg-white text-gray-900;
+  font-family: 'Inter', sans-serif;
+}
