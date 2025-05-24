@@ -84,7 +84,7 @@ export const deleteCampaign = async (campaignId: string, token?: string) => {
 export const generateTestEmail = async () => {
   console.log('Llamando a la ruta de prueba para generar email...');
   try {
-    const res = await fetch('http://localhost:8000/api/campaigns/generate-test-email');
+    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/campaigns/generate-test-email`);
     console.log('Respuesta recibida con status:', res.status);
     
     if (!res.ok) {

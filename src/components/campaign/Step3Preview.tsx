@@ -86,7 +86,7 @@ const Step3Preview = ({ value, onChange, onBack, onError, onSubmit, loading, onG
               });
               
               // Petición directa a la API con los datos reales
-              const response = await fetch(`http://localhost:8000/api/campaigns/generate-test-email?${params.toString()}`);
+              const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/campaigns/generate-test-email?${params.toString()}`);
               const data = await response.json();
               
               if (data.success && data.email) {
