@@ -73,7 +73,7 @@ exports.login = async (req, res) => {
     
     // Generar token JWT
     const token = jwt.sign(
-      { user_id: user._id },
+      { id: user._id },  // Cambiado de user_id a id para coincidir con el middleware
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );

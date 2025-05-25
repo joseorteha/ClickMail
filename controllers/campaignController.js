@@ -25,7 +25,8 @@ exports.createCampaign = async (req, res) => {
       return res.status(400).json({ message: 'Faltan campos requeridos' });
     }
     
-    const userId = req.user.user_id;
+    // Compatibilidad con ambos formatos de token (user_id y id)
+    const userId = req.user.id || req.user.user_id || req.user._id;
     console.log('ID de usuario:', userId);
     
     const campaign = new Campaign({
@@ -59,7 +60,8 @@ exports.createCampaign = async (req, res) => {
 // Obtener todas las campañas del usuario
 exports.getCampaigns = async (req, res) => {
   try {
-    const userId = req.user.user_id;
+    // Compatibilidad con ambos formatos de token (user_id y id)
+    const userId = req.user.id || req.user.user_id || req.user._id;
     console.log(`Obteniendo campañas para el usuario: ${userId}`);
     
     const campaigns = await Campaign.find({ userId });
@@ -88,8 +90,8 @@ exports.getCampaigns = async (req, res) => {
       // Añadir campos adicionales para el dashboard
       status: campaign.status || 'Borrador',
       date: new Date(campaign.createdAt).toLocaleDateString(),
-      // Campo de compatibilidad para distintos nombres
-      emailContent: campaign.generatedEmail
+      emailContent: campaign.generatedEmail,
+      stats: campaign.stats
     })));
   } catch (error) {
     console.error('Error al obtener campañas:', error);
@@ -101,7 +103,8 @@ exports.getCampaigns = async (req, res) => {
 exports.updateCampaign = async (req, res) => {
   try {
     const { campaignId } = req.params;
-    const userId = req.user.user_id;
+    // Compatibilidad con ambos formatos de token (user_id y id)
+    const userId = req.user.id || req.user.user_id || req.user._id;
     const updates = req.body;
     
     const campaign = await Campaign.findOneAndUpdate(
@@ -132,7 +135,8 @@ exports.updateCampaign = async (req, res) => {
 exports.deleteCampaign = async (req, res) => {
   try {
     const { campaignId } = req.params;
-    const userId = req.user.user_id;
+    // Compatibilidad con ambos formatos de token (user_id y id)
+    const userId = req.user.id || req.user.user_id || req.user._id;
     
     const result = await Campaign.deleteOne({ _id: campaignId, userId });
     
@@ -147,12 +151,58 @@ exports.deleteCampaign = async (req, res) => {
   }
 };
 
+// Obtener una campaña específica por ID
+exports.getCampaignById = async (req, res) => {
+  try {
+    const { campaignId } = req.params;
+    // Compatibilidad con ambos formatos de token (user_id y id)
+    const userId = req.user.id || req.user.user_id || req.user._id;
+    
+    console.log(`Obteniendo detalles de la campaña ${campaignId} para el usuario ${userId}`);
+    
+    const campaign = await Campaign.findOne({ _id: campaignId, userId });
+    
+    if (!campaign) {
+      return res.status(404).json({ message: 'Campaña no encontrada' });
+    }
+    
+    // Devolver la campaña con todos sus detalles y estadísticas
+    res.json({
+      id: campaign._id,
+      _id: campaign._id, // Duplicado para mayor compatibilidad
+      name: campaign.name,
+      description: campaign.description,
+      targetAudience: campaign.targetAudience,
+      generatedEmail: campaign.generatedEmail,
+      emailContent: campaign.generatedEmail, // Para compatibilidad
+      userId: campaign.userId,
+      createdAt: campaign.createdAt,
+      updatedAt: campaign.updatedAt,
+      status: campaign.status || 'Borrador',
+      // Estadísticas simuladas (en producción vendrían de una base de datos real)
+      stats: {
+        opens: Math.floor(Math.random() * 100),
+        clicks: Math.floor(Math.random() * 50),
+        bounces: Math.floor(Math.random() * 5),
+        openRate: Math.floor(Math.random() * 40) + 20 + '%', // Entre 20% y 60%
+        clickRate: Math.floor(Math.random() * 20) + 5 + '%', // Entre 5% y 25%
+        lastSent: new Date(Date.now() - Math.floor(Math.random() * 10 * 24 * 60 * 60 * 1000)).toISOString() // En los últimos 10 días
+      }
+    });
+  } catch (error) {
+    console.error('Error al obtener detalles de la campaña:', error);
+    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+  }
+};
+
 // Generar email para una campaña
 exports.generateEmail = async (req, res) => {
   try {
     console.log('=== INICIO GENERACION DE EMAIL ===');
     console.log('Generando email para campaña:', req.params.campaignId);
-    console.log('Usuario autenticado:', req.user ? 'Sí (ID: ' + req.user.user_id + ')' : 'No');
+    // Compatibilidad con ambos formatos de token (user_id y id)
+    const userId = req.user ? (req.user.id || req.user.user_id || req.user._id) : null;
+    console.log('Usuario autenticado:', req.user ? `Sí (ID: ${userId})` : 'No');
     console.log('OpenAI API Key:', openaiApiKey ? 'Configurada (primeros 5 caracteres: ' + openaiApiKey.substring(0, 5) + '...)' : 'No configurada');
     
     // Primero vamos a probar si OpenAI funciona con una solicitud simple
@@ -175,7 +225,7 @@ exports.generateEmail = async (req, res) => {
     
     // Ahora continuamos con la generación del email para la campaña
     const { campaignId } = req.params;
-    const userId = req.user.user_id;
+    // Ya definimos userId arriba, no necesitamos redefinirlo
     
     console.log('Buscando campaña con ID:', campaignId, 'para usuario:', userId);
     const campaign = await Campaign.findOne({ _id: campaignId, userId });

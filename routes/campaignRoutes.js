@@ -118,13 +118,20 @@ El correo debe ser persuasivo, usar el tono especificado y estar enfocado en el 
 // Todas las rutas de campañas requieren autenticación
 router.use(authMiddleware);
 
+// Importar controlador de emails
+const emailController = require('../controllers/emailController');
+
 // Rutas CRUD para campañas
 router.post('/', campaignController.createCampaign);
 router.get('/', campaignController.getCampaigns);
+router.get('/:campaignId', campaignController.getCampaignById); // Nueva ruta para ver detalles
 router.put('/:campaignId', campaignController.updateCampaign);
 router.delete('/:campaignId', campaignController.deleteCampaign);
 
-// Ruta para generar email con IA
+// Rutas para emails
 router.post('/:campaignId/generate-email', campaignController.generateEmail);
+router.post('/:campaignId/send-test', emailController.sendTestEmail); // Nueva ruta para enviar emails de prueba
+router.post('/:campaignId/send-bulk', emailController.sendBulkEmail); // Nueva ruta para enviar emails masivos
+router.post('/process-contacts', emailController.processContactsFile); // Nueva ruta para procesar archivos de contactos
 
 module.exports = router;
