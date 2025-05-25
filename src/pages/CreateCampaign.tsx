@@ -4,9 +4,11 @@ import Step1Describe from '../components/campaign/Step1Describe';
 import Step2Audience from '../components/campaign/Step2Audience';
 import Step3Preview from '../components/campaign/Step3Preview';
 import { createCampaign, generateEmail, generateTestEmail, updateCampaign } from '../services/campaignService';
+import { useToast } from '../context/ToastContext';
 
 const CreateCampaign = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [step, setStep] = useState(1);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -65,17 +67,17 @@ const CreateCampaign = () => {
     
     // Verificar solo los campos del paso 2 - con validación mejorada
     if (!campaign.targetAudience || campaign.targetAudience === '') {
-      alert('Por favor selecciona a quién va dirigido.');
+      showToast('Este campo es necesario para generar un email personalizado.', 'warning', 'Audiencia no definida');
       return;
     }
     
     if (!campaign.campaignGoal || campaign.campaignGoal === '') {
-      alert('Por favor selecciona el objetivo de la campaña.');
+      showToast('Este campo es necesario para generar un email efectivo.', 'warning', 'Objetivo no definido');
       return;
     }
     
     if (!campaign.tone || campaign.tone === '') {
-      alert('Por favor selecciona el tono de comunicación.');
+      showToast('Este campo es necesario para adaptar el estilo del mensaje.', 'warning', 'Tono no definido');
       return;
     }
     
@@ -119,7 +121,7 @@ const CreateCampaign = () => {
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      alert(`Error al avanzar: ${errorMessage}`);
+      showToast(`No se pudo avanzar al siguiente paso. ${errorMessage}`, 'error', 'Error de procesamiento');
     } finally {
       setLoading(false);
     }
@@ -129,13 +131,14 @@ const CreateCampaign = () => {
   const handleGenerateEmailContent = async () => {
     setLoading(true);
     try {
-      alert('Generando email de prueba usando la ruta directa...');
+      // Mostrar toast de información en lugar de alerta
+      showToast('Por favor espera mientras generamos tu email personalizado.', 'info', 'Generando email con IA...');
       
       // Usar la nueva función de prueba que no requiere ID de campaña ni autenticación
       const result = await generateTestEmail();
       
-      // Mostrar la respuesta para depuración
-      alert(`Email generado correctamente. Respuesta:\n${result.email.substring(0, 100)}...`);
+      // Mostrar toast de éxito en lugar de alerta
+      showToast('Se ha actualizado la vista previa con tu nuevo contenido.', 'success', '¡Email generado exitosamente!');
       
       // Actualizar el contenido del email
       setCampaign(prev => ({
@@ -147,7 +150,9 @@ const CreateCampaign = () => {
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      alert(`Error al generar el email: ${errorMessage}`);
+      // Mostrar toast de error en lugar de alerta
+      showToast(`Revisa la consola para más detalles o intenta de nuevo.`, 'error', 'Error generando email');
+      console.error(`Error al generar el email: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -159,13 +164,13 @@ const CreateCampaign = () => {
     try {
       // Verificar si tenemos el contenido del email
       if (!campaign.emailContent) {
-        alert('Por favor, genera un email primero usando el botón "Generar Email"');
+        showToast('Primero necesitas generar el contenido del email.', 'warning', 'Contenido requerido');
         setLoading(false);
         return;
       }
 
       // Primero, crear la campaña en el backend
-      alert(`Guardando campaña: ${campaign.name}`);
+      showToast(`Estamos guardando tu campaña "${campaign.name}". Espera un momento...`, 'info', 'Guardando campaña');
       
       const campaignData = {
         name: campaign.name || "Campaña sin nombre", 
@@ -190,17 +195,19 @@ const CreateCampaign = () => {
         generatedEmail: campaign.emailContent
       });
       
+      showToast('Tu campaña ha sido guardada correctamente.', 'success', '¡Campaña finalizada!');
+      
       // Redireccionar al dashboard con un mensaje de éxito
-      navigate('/dashboard', { 
-        state: { message: 'Campaña creada y email generado exitosamente' } 
-      });
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500); // Dar tiempo para que el usuario vea la notificación de éxito
     } catch (err) {
       console.error('Error al guardar la campaña:', err);
       let errorMessage = 'Error desconocido al guardar';
       if (err instanceof Error) {
         errorMessage = err.message;
       }
-      alert(`Error: ${errorMessage}`);
+      showToast(`No se pudo guardar la campaña. ${errorMessage}`, 'error', 'Error al guardar');
       setError(true);
     } finally {
       setLoading(false);
@@ -208,7 +215,7 @@ const CreateCampaign = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header con pasos */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">

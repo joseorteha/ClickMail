@@ -4,16 +4,59 @@ import { PlusIcon, ArrowRightIcon } from '../components/ui/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
+const GENERIC_TESTIMONIALS = [
+  {
+    name: 'María González',
+    company: 'Acme Corp',
+    position: 'Directora de Marketing',
+    avatarUrl: '/img/avatars/avatar1.jpg',
+    message: 'ClickMail nos permitió aumentar la tasa de apertura en un 40%. La IA realmente hace la diferencia.'
+  },
+  {
+    name: 'Carlos Mendoza',
+    company: 'StartUpX',
+    position: 'Fundador',
+    avatarUrl: '/img/avatars/avatar2.jpg',
+    message: 'La segmentación avanzada y la automatización nos ahorraron horas de trabajo cada semana.'
+  },
+  {
+    name: 'Laura Pérez',
+    company: 'Creativa Studio',
+    position: 'CMO',
+    avatarUrl: '/img/avatars/avatar3.jpg',
+    message: 'El soporte es excelente y siempre están atentos a nuestras necesidades. ¡Recomendado!'
+  }
+];
+
 const Landing = () => {
   const { isAuthenticated } = useAuth();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [testimonials, setTestimonials] = useState(GENERIC_TESTIMONIALS);
+  const [loadingTestimonials, setLoadingTestimonials] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ name: '', company: '', position: '', avatarUrl: '', message: '' });
+  const [formStatus, setFormStatus] = useState('');
   
   useEffect(() => {
     setIsLoaded(true);
-  }, []);
+    fetch('/api/testimonials')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setTestimonials(data);
+        } else {
+          setTestimonials(GENERIC_TESTIMONIALS);
+        }
+        setLoadingTestimonials(false);
+      })
+      .catch(() => {
+        setTestimonials(GENERIC_TESTIMONIALS);
+        setLoadingTestimonials(false);
+      });
+  }, [formStatus]);
 
   return (
-    <div className="bg-white dark:bg-gray-950 min-h-screen overflow-hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
@@ -115,7 +158,7 @@ const Landing = () => {
               >
                 {/* Tarjeta de email */}
                 <motion.div 
-                  className="absolute top-0 right-0 w-48 h-44 md:w-56 md:h-52 bg-white dark:bg-gray-800 rounded-xl shadow-2xl transform -rotate-6 border border-gray-100 dark:border-gray-700"
+                  className="absolute top-0 right-0 w-48 h-44 md:w-56 md:h-52 bg-white dark:bg-gray-700 rounded-xl shadow-2xl transform -rotate-6 border border-gray-600"
                   whileHover={{ rotate: 0, y: -10 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -138,7 +181,7 @@ const Landing = () => {
 
                 {/* Tarjeta de estadísticas */}
                 <motion.div 
-                  className="absolute bottom-0 left-0 w-48 h-44 md:w-56 md:h-52 bg-white dark:bg-gray-800 rounded-xl shadow-2xl transform rotate-6 border border-gray-100 dark:border-gray-700"
+                  className="absolute bottom-0 left-0 w-48 h-44 md:w-56 md:h-52 bg-white dark:bg-gray-700 rounded-xl shadow-2xl transform rotate-6 border border-gray-600"
                   whileHover={{ rotate: 0, y: 10 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -160,7 +203,7 @@ const Landing = () => {
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 200 }}
                 >
-                  <div className="w-56 h-56 md:w-72 md:h-72 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-inner">
+                  <div className="w-56 h-56 md:w-72 md:h-72 bg-white dark:bg-gray-700 rounded-full flex items-center justify-center shadow-inner">
                     <div className="w-48 h-48 md:w-64 md:h-64 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-500 dark:to-blue-400 rounded-full flex items-center justify-center shadow-md">
                       {/* Logo para modo claro */}
                       <img 
@@ -218,7 +261,7 @@ const Landing = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Feature 1 */}
             <motion.div 
-              className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center"
+              className="bg-white dark:bg-gray-700 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -242,7 +285,7 @@ const Landing = () => {
 
             {/* Feature 2 */}
             <motion.div 
-              className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center"
+              className="bg-white dark:bg-gray-700 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -269,7 +312,7 @@ const Landing = () => {
 
             {/* Feature 3 */}
             <motion.div 
-              className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center"
+              className="bg-white dark:bg-gray-700 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -401,6 +444,60 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Testimonios */}
+      <section id="testimonials" className="py-20 md:py-28 bg-gradient-to-b from-blue-50/60 to-indigo-50/60 dark:from-gray-900/60 dark:to-gray-800/60">
+        <div className="container mx-auto px-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-800 dark:text-white mb-10">Lo que dicen nuestros clientes</h2>
+          <div className="flex justify-center mb-8">
+            <button onClick={() => setShowForm(!showForm)} className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition">
+              {showForm ? 'Cerrar formulario' : 'Deja tu testimonio'}
+            </button>
+          </div>
+          {showForm && (
+            <form className="max-w-xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 mb-10" onSubmit={async (e) => {
+              e.preventDefault();
+              setFormStatus('');
+              try {
+                const res = await fetch('/api/testimonials', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(formData)
+                });
+                if (res.ok) {
+                  setFormStatus('¡Testimonio enviado! Será visible tras ser aprobado.');
+                  setFormData({ name: '', company: '', position: '', avatarUrl: '', message: '' });
+                } else {
+                  setFormStatus('Error al enviar el testimonio.');
+                }
+              } catch {
+                setFormStatus('Error al enviar el testimonio.');
+              }
+            }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <input required value={formData.name} onChange={e => setFormData(f => ({ ...f, name: e.target.value }))} className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="Nombre" />
+                <input value={formData.company} onChange={e => setFormData(f => ({ ...f, company: e.target.value }))} className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="Empresa (opcional)" />
+                <input value={formData.position} onChange={e => setFormData(f => ({ ...f, position: e.target.value }))} className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="Cargo (opcional)" />
+                <input value={formData.avatarUrl} onChange={e => setFormData(f => ({ ...f, avatarUrl: e.target.value }))} className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="URL de foto (opcional)" />
+              </div>
+              <textarea required value={formData.message} onChange={e => setFormData(f => ({ ...f, message: e.target.value }))} className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white mb-4" placeholder="¿Qué te ha parecido ClickMail?" rows={3} />
+              <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition mb-2">Enviar testimonio</button>
+              {formStatus && <div className="text-center text-green-600 dark:text-green-400 mt-2">{formStatus}</div>}
+            </form>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {loadingTestimonials ? (
+              <div className="col-span-3 text-center text-gray-500 dark:text-gray-400">Cargando testimonios...</div>
+            ) : testimonials.map((t, i) => (
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 flex flex-col items-center text-center border border-gray-200 dark:border-gray-700 hover:scale-105 transition-transform">
+                <img src={t.avatarUrl || `/img/avatars/avatar${(i%3)+1}.jpg`} alt={t.name} className={`w-20 h-20 rounded-full mb-4 border-4 object-cover ${i%3===0?'border-blue-100 dark:border-blue-900/40':i%3===1?'border-green-100 dark:border-green-900/40':'border-purple-100 dark:border-purple-900/40'}`} />
+                <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">“{t.message}”</p>
+                <div className={`font-semibold ${i%3===0?'text-blue-700 dark:text-blue-400':i%3===1?'text-green-700 dark:text-green-400':'text-purple-700 dark:text-purple-400'}`}>{t.name}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{t.position}{t.company ? `, ${t.company}` : ''}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
     </div>
   );

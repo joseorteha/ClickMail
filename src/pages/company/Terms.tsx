@@ -3,91 +3,99 @@ import StaticPageLayout from '../../components/common/StaticPageLayout';
 
 const Terms = () => {
   return (
-    <StaticPageLayout 
-      title="Términos y Condiciones" 
-      subtitle="Por favor lee atentamente nuestros términos de servicio"
-    >
-      <div className="max-w-3xl mx-auto">
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-          Última actualización: 23 de Mayo, 2025
-        </p>
-        
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">1. Introducción</h2>
-        <p className="mb-6">
-          Bienvenido a ClickMail ("nosotros", "nuestro", o "la Compañía"). Al acceder o utilizar nuestro servicio, 
-          sitio web, y aplicación (colectivamente, el "Servicio"), usted acepta estar sujeto a estos Términos y Condiciones.
-          Estos Términos se aplican a todos los visitantes, usuarios y otras personas que acceden o utilizan el Servicio.
-        </p>
-        
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">2. Comunicaciones</h2>
-        <p className="mb-6">
-          Al crear una cuenta en nuestro servicio, usted acepta recibir comunicaciones de nuestra parte,
-          incluyendo emails y mensajes dentro de la aplicación. Puede optar por no recibir ciertas comunicaciones 
-          ajustando la configuración de su cuenta.
-        </p>
-        
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">3. Compras y Suscripciones</h2>
-        <p className="mb-2">
-          Al adquirir una suscripción a ClickMail, usted acepta los siguientes términos:
-        </p>
-        <ul className="list-disc pl-6 mb-6 space-y-2">
-          <li>Las suscripciones se renuevan automáticamente al final de cada ciclo de facturación.</li>
-          <li>Puede cancelar su suscripción en cualquier momento desde la configuración de su cuenta.</li>
-          <li>No ofrecemos reembolsos por pagos ya procesados, a menos que lo exija la ley.</li>
-          <li>Nos reservamos el derecho de cambiar nuestros precios con previo aviso.</li>
-        </ul>
-        
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">4. Uso del Servicio</h2>
-        <p className="mb-2">
-          Usted acepta utilizar nuestro servicio únicamente para fines legales y de acuerdo con estos Términos.
-          Usted se compromete a no:
-        </p>
-        <ul className="list-disc pl-6 mb-6 space-y-2">
-          <li>Violar ninguna ley o regulación aplicable.</li>
-          <li>Enviar spam o comunicaciones no solicitadas.</li>
-          <li>Infringir los derechos de propiedad intelectual de terceros.</li>
-          <li>Interferir con o dañar la seguridad o rendimiento del Servicio.</li>
-          <li>Distribuir malware, virus o cualquier código dañino.</li>
-        </ul>
-        
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">5. Contenido Generado por IA</h2>
-        <p className="mb-6">
-          El Servicio incluye funcionalidades que utilizan inteligencia artificial para generar contenido. Usted reconoce que:
-        </p>
-        <ul className="list-disc pl-6 mb-6 space-y-2">
-          <li>El contenido generado por IA es creado automáticamente y puede requerir revisión humana.</li>
-          <li>Usted es responsable del contenido que envía a sus destinatarios, incluso si fue generado por nuestra IA.</li>
-          <li>No garantizamos la precisión, relevancia o adecuación de todo el contenido generado por IA.</li>
-          <li>El contenido generado no debe utilizarse para engañar o desinformar deliberadamente.</li>
-        </ul>
-        
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">6. Limitación de Responsabilidad</h2>
-        <p className="mb-6">
-          En ningún caso ClickMail, sus directores, empleados, socios, agentes, proveedores o afiliados serán responsables 
-          por cualquier daño indirecto, incidental, especial, consecuente o punitivo, incluyendo, entre otros, pérdida de 
-          beneficios, datos, uso, buena voluntad u otras pérdidas intangibles resultantes de:
-        </p>
-        <ul className="list-disc pl-6 mb-6 space-y-2">
-          <li>Su uso o incapacidad para usar el Servicio.</li>
-          <li>Cualquier cambio en el Servicio o cese temporal o permanente del mismo.</li>
-          <li>Acceso no autorizado o alteración de sus transmisiones o datos.</li>
-          <li>Declaraciones o conductas de terceros respecto al Servicio.</li>
-        </ul>
-        
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">7. Cambios a los Términos</h2>
-        <p className="mb-6">
-          Nos reservamos el derecho de modificar o reemplazar estos Términos en cualquier momento. Si realizamos cambios 
-          materiales, notificaremos a través de nuestro sitio web o por email antes de que los cambios entren en vigor.
-          Su uso continuado del Servicio después de dichos cambios constituye su aceptación de los nuevos Términos.
-        </p>
-        
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">8. Contacto</h2>
-        <p className="mb-6">
-          Si tiene alguna pregunta sobre estos Términos, por favor contáctenos en legal@clickmail.app.
-        </p>
-      </div>
-    </StaticPageLayout>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <StaticPageLayout 
+        title="Términos y Condiciones" 
+        subtitle="Última actualización: 1 de Marzo, 2024"
+      >
+        <div className="max-w-4xl mx-auto">
+          <div className="prose dark:prose-invert max-w-none">
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">1. Aceptación de los Términos</h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                Al acceder y utilizar ClickMail, usted acepta estar sujeto a estos términos y condiciones. Si no está de acuerdo con alguna parte de estos términos, no podrá acceder al servicio.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">2. Descripción del Servicio</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                ClickMail proporciona una plataforma para:
+              </p>
+              <ul className="list-disc pl-6 text-gray-600 dark:text-gray-300 space-y-2">
+                <li>Gestión de campañas de email marketing</li>
+                <li>Análisis de métricas y rendimiento</li>
+                <li>Automatización de envíos</li>
+                <li>Gestión de contactos y listas</li>
+              </ul>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">3. Cuentas de Usuario</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                Al crear una cuenta, usted debe:
+              </p>
+              <ul className="list-disc pl-6 text-gray-600 dark:text-gray-300 space-y-2">
+                <li>Proporcionar información precisa y completa</li>
+                <li>Mantener la seguridad de su cuenta</li>
+                <li>Notificar cualquier uso no autorizado</li>
+                <li>Aceptar la responsabilidad por todas las actividades en su cuenta</li>
+              </ul>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">4. Uso Aceptable</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                Usted acepta no:
+              </p>
+              <ul className="list-disc pl-6 text-gray-600 dark:text-gray-300 space-y-2">
+                <li>Violar leyes o regulaciones aplicables</li>
+                <li>Enviar spam o contenido malicioso</li>
+                <li>Interferir con el funcionamiento del servicio</li>
+                <li>Acceder a cuentas de otros usuarios</li>
+              </ul>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">5. Propiedad Intelectual</h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                Todo el contenido y funcionalidades de ClickMail están protegidos por derechos de autor y otras leyes de propiedad intelectual. No se permite la copia, modificación o distribución sin autorización.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">6. Limitación de Responsabilidad</h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                ClickMail no será responsable por daños indirectos, incidentales o consecuentes que resulten del uso o la imposibilidad de usar el servicio.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">7. Modificaciones</h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                Nos reservamos el derecho de modificar estos términos en cualquier momento. Las modificaciones entrarán en vigor inmediatamente después de su publicación en el sitio.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">8. Contacto</h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                Para preguntas sobre estos términos, contacte a:
+              </p>
+              <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                <p className="text-gray-700 dark:text-gray-300">
+                  Email: <a href="mailto:legal@clickmail.app" className="text-blue-600 dark:text-blue-400 hover:underline">legal@clickmail.app</a>
+                </p>
+                <p className="text-gray-700 dark:text-gray-300 mt-2">
+                  Dirección: Calle Principal 123, Ciudad, País
+                </p>
+              </div>
+            </section>
+          </div>
+        </div>
+      </StaticPageLayout>
+    </div>
   );
 };
 
-export default Terms;
+export default Terms; 

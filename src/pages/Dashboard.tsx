@@ -1,45 +1,179 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import Card from '../components/ui/Card';
+import { useToast } from '../context/ToastContext';
 import { MailIcon, EditIcon, TrashIcon, PlusIcon, InfoIcon } from '../components/ui/Icons';
+import StatCard from '../components/dashboard/StatCard';
+import CampaignCard from '../components/dashboard/CampaignCard';
+import CampaignFilters from '../components/dashboard/CampaignFilters';
+import TutorialGuide from '../components/ui/TutorialGuide';
+import InfoPanel from '../components/dashboard/InfoPanel';
+import { motion } from 'framer-motion';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
-import { getCampaigns, deleteCampaign } from '../services/campaignService';
+import { getCampaigns, deleteCampaign, getCampaignById, sendTestEmail as sendTestEmailService } from '../services/campaignService';
 import { emailTemplates, applyTemplate } from '../utils/emailTemplates';
 
-const Dashboard: React.FC = () => {
+// Interfaces
+interface Campaign {
+  _id?: string;
+  id?: string;
+  name: string;
+  description: string;
+  status: string;
+  emailContent?: string;
+  generatedEmail?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  stats?: {
+    totalSent: number;
+    opens: number;
+  };
+}
+
+interface DashboardStats {
+  totalCampaigns: number;
+  pendingCampaigns: number;
+  sentEmails: number;
+  viewedEmails: number;
+  openRate: number;
+  growthRate: number;
+}
+
+const Dashboard = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
-  const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [filteredCampaigns, setFilteredCampaigns] = useState<any[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [tutorialCompleted, setTutorialCompleted] = useState(() => {
     return localStorage.getItem('tutorialCompleted') === 'true';
   });
+  const [tutorialActive, setTutorialActive] = useState(false);
+
+  // Referencias para el tutorial y secciones
+  const headerRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  const filtersRef = useRef<HTMLDivElement>(null);
+  const campaignsListRef = useRef<HTMLDivElement>(null);
+  const createCampaignRef = useRef<HTMLAnchorElement>(null);
   
   // Estado para filtrado y ordenación
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [sortOrder, setSortOrder] = useState('newest'); // 'newest', 'oldest', 'a-z', 'z-a'
+  const [sortOrder, setSortOrder] = useState('newest');
 
   // Estado para dashboard
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     totalCampaigns: 0,
     pendingCampaigns: 0,
     sentEmails: 0,
-    viewedEmails: 0
+    viewedEmails: 0,
+    openRate: 0,
+    growthRate: 0
   });
   
   // Estado para el modal de edición de email
   const [showEmailEditor, setShowEmailEditor] = useState(false);
   const [currentEmail, setCurrentEmail] = useState('');
   const [currentCampaignId, setCurrentCampaignId] = useState('');
-  const [currentCampaign, setCurrentCampaign] = useState<any>(null);
+  const [currentCampaign, setCurrentCampaign] = useState<Campaign | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [originalEmail, setOriginalEmail] = useState('');
+  
+  // Estado para el modal de envío de email de prueba
+  const [showSendEmailModal, setShowSendEmailModal] = useState(false);
+  const [recipient, setRecipient] = useState('');
+  const [subject, setSubject] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
+  
+  // Calcular estadísticas
+  useEffect(() => {
+    if (!campaigns.length) return;
+    const pendingCount = campaigns.filter(c => (c.status || 'Borrador').toLowerCase() !== 'enviada').length;
+    const sentEmails = campaigns.reduce((acc, c) => acc + (c.stats?.totalSent || 0), 0);
+    const viewedEmails = campaigns.reduce((acc, c) => acc + (c.stats?.opens || 0), 0);
+    const openRate = sentEmails > 0 ? Math.round((viewedEmails / sentEmails) * 100) : 0;
+    // Simulación de tasa de crecimiento (en un caso real, necesitaríamos datos históricos)
+    const lastMonthCampaigns = 10; // Simulado
+    const growthRate = lastMonthCampaigns > 0 
+      ? Math.round(((campaigns.length - lastMonthCampaigns) / lastMonthCampaigns) * 100) 
+      : 100;
+    setStats({
+      totalCampaigns: campaigns.length,
+      pendingCampaigns: pendingCount,
+      sentEmails,
+      viewedEmails,
+      openRate,
+      growthRate
+    });
+  }, [campaigns]);
+
+  // Cargar campañas reales al montar
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getCampaigns();
+        setCampaigns(data);
+        setFilteredCampaigns(data);
+      } catch (error) {
+        console.error('Error cargando campañas:', error);
+        setError('Error al cargar las campañas. Por favor, intenta de nuevo.');
+        setNotification('Error al cargar campañas');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCampaigns();
+  }, []);
+
+  // Mostrar tutorial si es la primera visita
+  useEffect(() => {
+    if (!tutorialCompleted) {
+      const timer = setTimeout(() => setTutorialActive(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [tutorialCompleted]);
+
+  // Actualizar las campañas filtradas cuando cambian los filtros
+  useEffect(() => {
+    if (!campaigns.length) return;
+    let filtered = campaigns.filter(campaign => {
+      const nameMatch = campaign.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const descMatch = campaign.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+      return nameMatch || descMatch;
+    });
+    if (statusFilter) {
+      filtered = filtered.filter(campaign => {
+        return (campaign.status || 'Borrador').toLowerCase() === statusFilter.toLowerCase();
+      });
+    }
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.createdAt || Date.now());
+      const dateB = new Date(b.createdAt || Date.now());
+      const nameA = a.name.toLowerCase();
+      const nameB = b.name.toLowerCase();
+      switch (sortOrder) {
+        case 'newest':
+          return dateB.getTime() - dateA.getTime();
+        case 'oldest':
+          return dateA.getTime() - dateB.getTime();
+        case 'a-z':
+          return nameA.localeCompare(nameB);
+        case 'z-a':
+          return nameB.localeCompare(nameA);
+        default:
+          return dateB.getTime() - dateA.getTime();
+      }
+    });
+    setFilteredCampaigns(filtered);
+  }, [campaigns, searchTerm, statusFilter, sortOrder]);
   
   // Función para abrir el editor de email
   const openEmailEditor = (campaignId: string, emailContent: string, campaign: any) => {
@@ -49,6 +183,67 @@ const Dashboard: React.FC = () => {
     setCurrentCampaign(campaign);
     setSelectedTemplate(''); // Resetear la plantilla seleccionada
     setShowEmailEditor(true);
+  };
+  
+  // Función para ver detalles de la campaña
+  const handleViewDetails = async (campaignId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const campaignData = await getCampaignById(campaignId);
+      
+      if (campaignData) {
+        navigate(`/campaign/${campaignId}`, { state: { campaign: campaignData } });
+      } else {
+        const campaign = campaigns.find(c => (c._id === campaignId || c.id === campaignId));
+        if (!campaign) {
+          throw new Error('No se encontró la campaña');
+        }
+        navigate(`/campaign/${campaignId}`, { state: { campaign } });
+      }
+    } catch (error) {
+      console.error('Error al obtener detalles de la campaña:', error);
+      setError('No se pudieron cargar los detalles de la campaña. Inténtalo de nuevo.');
+      showToast('Error al cargar los detalles de la campaña', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Función para abrir el modal de envío de email de prueba
+  const openSendTestEmailModal = (campaign: any) => {
+    setCurrentCampaign(campaign);
+    setCurrentCampaignId(campaign._id || campaign.id);
+    setSubject(`Prueba: ${campaign.name || 'Campaña'}`);
+    setRecipient('');
+    setShowSendEmailModal(true);
+  };
+  
+  // Función para enviar email de prueba
+  const handleSendTestEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentCampaign || !recipient) return;
+    
+    setSendingEmail(true);
+    setError(null);
+    try {
+      await sendTestEmailService(currentCampaign._id || currentCampaign.id || '', {
+        recipient, 
+        subject: subject || `Prueba: ${currentCampaign.name}`,
+        recipients: [recipient]
+      });
+      
+        setShowSendEmailModal(false);
+        setRecipient('');
+        setSubject('');
+      showToast('Email de prueba enviado correctamente', 'success');
+    } catch (error) {
+      console.error('Error enviando email de prueba:', error);
+      setError('Error al enviar el email de prueba. Por favor, intenta de nuevo.');
+      showToast('Error al enviar el email de prueba', 'error');
+    } finally {
+      setSendingEmail(false);
+    }
   };
   
   // Función para aplicar una plantilla al email actual
@@ -76,582 +271,227 @@ const Dashboard: React.FC = () => {
     setSelectedTemplate(templateId);
   };
   
-  // Referencias para los elementos del tutorial
-  const headerRef = useRef<HTMLDivElement>(null);
-  const createCampaignRef = useRef<HTMLAnchorElement>(null);
-  const campaignsListRef = useRef<HTMLDivElement>(null);
-  const campaignActionsRef = useRef<HTMLDivElement>(null);
-  const featuresRef = useRef<HTMLDivElement>(null);
+  // Guardar email editado
+  const saveEditedEmail = () => {
+    // Aquí iría la implementación para guardar el email editado
+    setShowEmailEditor(false);
+  };
   
-  // Actualizar las campañas filtradas cuando cambian los filtros
-  useEffect(() => {
-    if (!campaigns.length) return;
-
-    // Aplicar búsqueda de texto
-    let filtered = campaigns.filter(campaign => {
-      const nameMatch = campaign.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const descMatch = campaign.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
-      return nameMatch || descMatch;
-    });
-
-    // Aplicar filtro por estado
-    if (statusFilter) {
-      filtered = filtered.filter(campaign => {
-        return (campaign.status || 'Borrador').toLowerCase() === statusFilter.toLowerCase();
-      });
-    }
-
-    // Aplicar ordenación
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.createdAt || Date.now());
-      const dateB = new Date(b.createdAt || Date.now());
-      const nameA = a.name.toLowerCase();
-      const nameB = b.name.toLowerCase();
-      
-      switch (sortOrder) {
-        case 'newest':
-          return dateB.getTime() - dateA.getTime();
-        case 'oldest':
-          return dateA.getTime() - dateB.getTime();
-        case 'a-z':
-          return nameA.localeCompare(nameB);
-        case 'z-a':
-          return nameB.localeCompare(nameA);
-        default:
-          return dateB.getTime() - dateA.getTime();
-      }
-    });
-
-    setFilteredCampaigns(filtered);
-  }, [campaigns, searchTerm, statusFilter, sortOrder]);
-
-  // Calcular estadísticas
-  useEffect(() => {
-    if (!campaigns.length) return;
+  // Función para renderizar el badge de estado con el color adecuado
+  const renderStatusBadge = (status: string) => {
+    // Convertir a minúsculas y asegurar valor por defecto
+    const normalizedStatus = (status || 'borrador').toLowerCase();
     
-    // Contar campañas por estado
-    const pendingCount = campaigns.filter(c => 
-      (c.status || 'Borrador').toLowerCase() !== 'enviada'
-    ).length;
-    
-    // Calcular emails enviados y vistos (simulados)
-    const sentCount = campaigns.filter(c => c.status?.toLowerCase() === 'enviada').length * 50; // Simulación
-    const viewedCount = Math.round(sentCount * 0.35); // Simulación: 35% de tasa de apertura
-    
-    setStats({
-      totalCampaigns: campaigns.length,
-      pendingCampaigns: pendingCount,
-      sentEmails: sentCount,
-      viewedEmails: viewedCount
-    });
-  }, [campaigns]);
-
-  // Cargar campañas reales al montar
-  useEffect(() => {
-    const fetchCampaigns = async () => {
-      setLoading(true);
-      try {
-        // No necesitamos pasar el token, el servicio lo obtiene automáticamente
-        const data = await getCampaigns();
-        setCampaigns(data);
-        setFilteredCampaigns(data);
-      } catch (error) {
-        console.error('Error cargando campañas:', error);
-        setNotification('Error al cargar campañas');
-      } finally {
-        setLoading(false);
+    // Configuración de colores según el estado
+    const statusConfig: Record<string, {bg: string, text: string}> = {
+      borrador: {
+        bg: 'bg-gray-100 dark:bg-gray-700',
+        text: 'text-gray-700 dark:text-gray-300'
+      },
+      enviada: {
+        bg: 'bg-green-100 dark:bg-green-900/30',
+        text: 'text-green-700 dark:text-green-300'
+      },
+      programada: {
+        bg: 'bg-purple-100 dark:bg-purple-900/30',
+        text: 'text-purple-700 dark:text-purple-300'
+      },
+      completada: {
+        bg: 'bg-blue-100 dark:bg-blue-900/30',
+        text: 'text-blue-700 dark:text-blue-300'
       }
     };
-    fetchCampaigns();
-  }, []);
-  
-  // Manejar mensajes de notificación (ej. después de eliminar una campaña)
-  useEffect(() => {
-    if (location.state && location.state.message) {
-      setNotification(location.state.message);
-      
-      // Limpiar el mensaje después de 5 segundos
-      const timer = setTimeout(() => {
-        setNotification(null);
-        navigate(location.pathname, { replace: true, state: {} });
-      }, 5000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [location.state, navigate, location.pathname]);
+    
+    // Obtener configuración o usar la de borrador como fallback
+    const config = statusConfig[normalizedStatus] || statusConfig.borrador;
+    
+    // Capitalizar primera letra del estado para mostrarlo
+    const displayStatus = normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1);
+    
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
+        {displayStatus}
+      </span>
+    );
+  };
   
   // Eliminar campaña real
   const handleDelete = async (id: string) => {
     if (!window.confirm('¿Estás seguro de que quieres eliminar esta campaña?')) {
       return;
     }
-    
     setLoading(true);
+    setError(null);
     try {
-      // No necesitamos pasar el token, el servicio lo obtiene automáticamente
       await deleteCampaign(id);
       setCampaigns(campaigns.filter(campaign => (campaign._id !== id && campaign.id !== id)));
+      setFilteredCampaigns(filteredCampaigns.filter(campaign => (campaign._id !== id && campaign.id !== id)));
       setNotification('Campaña eliminada correctamente');
+      showToast('Campaña eliminada con éxito', 'success');
     } catch (error) {
       console.error('Error eliminando campaña:', error);
-      setNotification('Error al eliminar la campaña');
+      setError('Error al eliminar la campaña. Por favor, intenta de nuevo.');
+      showToast('Error al eliminar la campaña', 'error');
     } finally {
       setLoading(false);
     }
-  };
-  
-  // Guardar email editado
-  const saveEditedEmail = async () => {
-    setLoading(true);
-    try {
-      // Importar la función updateCampaign de manera dinámica para evitar conflictos
-      const { updateCampaign } = await import('../services/campaignService');
-      
-      await updateCampaign(currentCampaignId, { generatedEmail: currentEmail });
-      
-      // Actualizar la lista de campañas localmente
-      setCampaigns(campaigns.map(campaign => {
-        if (campaign._id === currentCampaignId || campaign.id === currentCampaignId) {
-          return { ...campaign, generatedEmail: currentEmail, emailContent: currentEmail };
-        }
-        return campaign;
-      }));
-      
-      setShowEmailEditor(false);
-      setNotification('Email actualizado correctamente');
-    } catch (error) {
-      console.error('Error actualizando email:', error);
-      setNotification('Error al actualizar el email');
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  // Simular envío de email de prueba
-  const sendTestEmail = async (campaign: any) => {
-    setLoading(true);
-    try {
-      // Aquí podrías implementar el envío real usando un servicio de email
-      // Por ahora, solo simulamos
-      setTimeout(() => {
-        setNotification(`Email de prueba enviado para la campaña "${campaign.name}". Revisa tu bandeja de entrada.`);
-        setLoading(false);
-      }, 1500);
-    } catch (error) {
-      console.error('Error enviando email de prueba:', error);
-      setNotification('Error al enviar el email de prueba');
-      setLoading(false);
-    }
-  };
-  
-  // Iniciar el tutorial paso a paso
-  const startTutorial = () => {
-    const driverObj = driver({
-      showProgress: true,
-      animate: true,
-      allowClose: true,
-      stagePadding: 10,
-      nextBtnText: 'Siguiente',
-      prevBtnText: 'Anterior',
-      doneBtnText: 'Finalizar',
-      steps: [
-        // Paso 1: Bienvenida
-        {
-          element: '#dashboard-header',
-          popover: {
-            title: 'Bienvenido a tu Dashboard',
-            description: 'Aquí podrás gestionar todas tus campañas de email marketing y aprovechar la IA para mejorar tus resultados.',
-            side: 'bottom',
-            align: 'center'
-          }
-        },
-        // Paso 2: Crear campaña
-        {
-          element: '#create-campaign-btn',
-          popover: {
-            title: 'Crear nueva campaña',
-            description: 'Haz clic aquí para comenzar a crear una nueva campaña utilizando nuestra IA para generar contenido personalizado.',
-            side: 'bottom',
-            align: 'center'
-          }
-        },
-        // Paso 3: Lista de campañas
-        {
-          element: '#campaigns-list',
-          popover: {
-            title: 'Tus campañas',
-            description: 'Aquí puedes ver todas tus campañas, filtrarlas por estado y buscar campañas específicas.',
-            side: 'top',
-            align: 'center'
-          }
-        },
-        // Paso 4: Acciones para campañas
-        {
-          element: '#campaign-actions',
-          popover: {
-            title: 'Acciones rápidas',
-            description: 'Gestiona tus campañas con estas acciones: ver detalles, eliminar o enviar una prueba.',
-            side: 'left',
-            align: 'center'
-          }
-        },
-        // Paso 5: Características
-        {
-          element: '#features-section',
-          popover: {
-            title: 'Características de ClickMail',
-            description: 'Explora todas las herramientas y capacidades de IA que tenemos para ayudarte a crear campañas exitosas.',
-            side: 'top',
-            align: 'center'
-          }
-        }
-      ],
-      onDestroyed: () => {
-        // Marcar el tutorial como completado
-        localStorage.setItem('tutorialCompleted', 'true');
-        setTutorialCompleted(true);
-        setNotification('¡Tutorial completado! Puedes volver a verlo en la sección de configuración.');
-        
-        // Eliminar la notificación después de 5 segundos
-        setTimeout(() => {
-          setNotification(null);
-        }, 5000);
-      }
-    });
-    
-    driverObj.drive();
   };
   
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
-      <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        {/* Botón del tutorial - solo visible para usuarios nuevos que no han completado el tutorial */}
-        <div className="flex justify-end mb-4">
-          {!tutorialCompleted && (
-            <button
-              onClick={startTutorial}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800/60 transition-colors"
-            >
-              <InfoIcon size={18} />
-              <span>Ver tutorial</span>
-            </button>
-          )}
-        </div>
-        
-        {/* Notificación */}
-        {notification && (
-          <div className="mb-4 p-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-md shadow-sm">
-            {notification}
-          </div>
-        )}
-        
+    <div className="min-h-screen bg-[#f6f8fb] dark:bg-gray-900">
+      <div className="max-w-6xl mx-auto px-2 py-6">
         {/* Cabecera */}
-        <div id="dashboard-header" ref={headerRef} className="mb-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-indigo-700 dark:text-indigo-300">¡Bienvenido, {user?.name || 'Usuario'}!</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2 text-lg">Gestiona tus campañas de email marketing con IA</p>
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4"
+        >
+          <div ref={headerRef}>
+            <h1 className="text-2xl md:text-3xl font-bold text-[#3a3a4d] dark:text-white mb-1">¡Bienvenido, {user?.name || 'Usuario'}!</h1>
+            <p className="text-gray-500 dark:text-gray-300 text-base">Gestiona tus campañas de email marketing con IA</p>
           </div>
-          
-          {/* Tarjetas de estadísticas */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Campañas Totales</h3>
-              <div className="mt-2 flex justify-between items-end">
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalCampaigns}</p>
-                <div className="flex items-center text-green-600 dark:text-green-400">
-                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M12 7a1 1 0 10-2 0v4a1 1 0 102 0V7z" clipRule="evenodd" />
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a6.5 6.5 0 100 11.814v.094a1 1 0 102 0v-.094a6.5 6.5 0 100-11.814V5z" clipRule="evenodd" />
-                  </svg>
-                  <span className="ml-1 text-sm">+{Math.round(stats.totalCampaigns * 0.2)}%</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Campañas Pendientes</h3>
-              <div className="mt-2 flex justify-between items-end">
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.pendingCampaigns}</p>
-                <span className="text-xs px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full">
-                  {stats.totalCampaigns ? Math.round((stats.pendingCampaigns / stats.totalCampaigns) * 100) : 0}%
-                </span>
-              </div>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Emails Enviados</h3>
-              <div className="mt-2 flex justify-between items-end">
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.sentEmails}</p>
-                <div className="flex items-center text-blue-600 dark:text-blue-400">
-                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                  </svg>
-                  <span className="ml-1 text-sm">{stats.sentEmails ? Math.round((stats.viewedEmails / stats.sentEmails) * 100) : 0}% abiertos</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Tasa Engagement</h3>
-              <div className="mt-2 flex justify-between items-end">
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.sentEmails ? Math.round((stats.viewedEmails / stats.sentEmails) * 0.65 * 100) : 0}%</p>
-                <div className="flex items-center text-indigo-600 dark:text-indigo-400">
-                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M12 7a1 1 0 10-2 0v4a1 1 0 102 0V7z" clipRule="evenodd" />
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a6.5 6.5 0 100 11.814v.094a1 1 0 102 0v-.094a6.5 6.5 0 100-11.814V5z" clipRule="evenodd" />
-                  </svg>
-                  <span className="ml-1 text-sm">+5.2%</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+        <Link 
+              ref={createCampaignRef}
+          to="/campaign/create" 
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium shadow-sm transition-colors"
+        >
+              <PlusIcon size={16} />
+              Crear nueva campaña
+        </Link>
+          </motion.div>
+        </motion.div>
+        {/* Tarjetas de estadísticas */}
+        <div ref={statsRef} className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <motion.div whileHover={{ y: -5, transition: { duration: 0.2 } }}>
+            <StatCard 
+              title="Campañas Totales" 
+              value={stats.totalCampaigns} 
+              trend={{ value: `+${stats.growthRate}%`, isPositive: stats.growthRate > 0 }} 
+              icon={<span className="text-indigo-600 dark:text-indigo-400 text-xl">📊</span>}
+            />
+          </motion.div>
+          <motion.div whileHover={{ y: -5, transition: { duration: 0.2 } }}>
+            <StatCard 
+              title="Campañas Pendientes" 
+              value={stats.pendingCampaigns} 
+              trend={{ value: "En progreso" }} 
+              icon={<span className="text-amber-600 dark:text-amber-400 text-xl">⏳</span>}
+            />
+          </motion.div>
+          <motion.div whileHover={{ y: -5, transition: { duration: 0.2 } }}>
+            <StatCard 
+              title="Emails Enviados" 
+              value={stats.sentEmails} 
+              trend={{ value: "Total acumulado", isPositive: true }} 
+              icon={<span className="text-green-600 dark:text-green-400 text-xl">📧</span>}
+            />
+          </motion.div>
+          <motion.div whileHover={{ y: -5, transition: { duration: 0.2 } }}>
+            <StatCard 
+              title="Tasa de Apertura" 
+              value={`${stats.openRate}%`} 
+              trend={{ value: "Sobre envíos totales", isPositive: stats.openRate > 20 }} 
+              icon={<span className="text-blue-600 dark:text-blue-400 text-xl">👁️</span>}
+            />
+          </motion.div>
         </div>
-        
-        {/* Botón de crear campaña */}
-        <div className="mb-8 flex justify-center">
-          <Link
-            id="create-campaign-btn"
-            ref={createCampaignRef}
-            to="/campaign/create"
-            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-colors"
+        {/* Filtros */}
+        <div ref={filtersRef}>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <PlusIcon size={20} />
-            <span>Crear nueva campaña</span>
-          </Link>
-        </div>
-        
-        {/* Lista de campañas */}
-        <Card className="mb-8">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Tus campañas</h2>
-          
-          {campaigns.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400 mb-4">Aún no tienes campañas creadas</p>
-              <Link
-                to="/campaign/create"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800/60 rounded-lg transition-colors"
-              >
-                <PlusIcon size={18} />
-                <span>Crear tu primera campaña</span>
-              </Link>
-            </div>
-          ) : (
-            <>
-              <div className="mb-6 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-                <h3 className="font-medium text-gray-900 dark:text-white mb-3">Filtrar y ordenar</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="relative">
-                    <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Buscar</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="Buscar campaña..."
-                        className="w-full pl-10 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-indigo-500 focus:border-indigo-500"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Filtrar por estado</label>
-                    <select 
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-indigo-500 focus:border-indigo-500"
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                      <option value="">Todas las campañas</option>
-                      <option value="enviada">Enviadas</option>
-                      <option value="borrador">Borradores</option>
-                      <option value="programada">Programadas</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Ordenar por</label>
-                    <select 
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-indigo-500 focus:border-indigo-500"
-                      value={sortOrder}
-                      onChange={(e) => setSortOrder(e.target.value)}
-                    >
-                      <option value="newest">Más recientes</option>
-                      <option value="oldest">Más antiguas</option>
-                      <option value="a-z">Nombre (A-Z)</option>
-                      <option value="z-a">Nombre (Z-A)</option>
-                    </select>
-                  </div>
-                </div>
-                
-                {/* Indicadores de filtros activos */}
-                {(searchTerm || statusFilter) && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {searchTerm && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-                        Búsqueda: {searchTerm}
-                        <button 
-                          className="ml-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                          onClick={() => setSearchTerm('')}
-                        >
-                          <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                        </button>
-                      </span>
-                    )}
-                    
-                    {statusFilter && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-200">
-                        Estado: {statusFilter}
-                        <button 
-                          className="ml-1 text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-200"
-                          onClick={() => setStatusFilter('')}
-                        >
-                          <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                        </button>
-                      </span>
-                    )}
-                    
-                    <button 
-                      className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
-                      onClick={() => {
-                        setSearchTerm('');
-                        setStatusFilter('');
-                        setSortOrder('newest');
-                      }}
-                    >
-                      Limpiar todos los filtros
-                    </button>
-                  </div>
-                )}
+            <CampaignFilters
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              sortOrder={sortOrder}
+              setSortOrder={setSortOrder}
+              onClearFilters={() => {
+                    setSearchTerm('');
+                    setStatusFilter('');
+                    setSortOrder('newest');
+                  }}
+            />
+          </motion.div>
               </div>
-              
-              <div id="campaigns-list" ref={campaignsListRef} className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredCampaigns.length === 0 ? (
-                  <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                    <p className="text-gray-500 dark:text-gray-400">No se encontraron campañas con los filtros actuales</p>
-                    <button 
-                      className="mt-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
-                      onClick={() => {
-                        setSearchTerm('');
-                        setStatusFilter('');
-                      }}
-                    >
-                      Limpiar filtros
-                    </button>
-                  </div>
+        {/* Lista de campañas */}
+        <div ref={campaignsListRef} className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
+              {filteredCampaigns.length === 0 ? (
+            <div className="text-center py-10 text-gray-400 text-sm">No se encontraron campañas.</div>
                 ) : (
                   filteredCampaigns.map(campaign => (
-                    <div key={campaign._id || campaign.id} className="py-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300">
-                              <MailIcon size={16} />
-                            </span>
-                            <h3 className="font-medium text-gray-800 dark:text-gray-200">{campaign.name}</h3>
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
-                              {campaign.status || 'Borrador'}
-                            </span>
-                          </div>
-                          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{campaign.description}</p>
-                        </div>
-                        
-                        <div id="campaign-actions" ref={campaign._id === (filteredCampaigns[0]?._id || filteredCampaigns[0]?.id) ? campaignActionsRef : undefined} className="flex flex-wrap gap-2">
-                            <button
-                              onClick={() => handleDelete(campaign._id || campaign.id)}
-                              disabled={loading}
-                              className="px-3 py-1.5 text-xs bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800/40 text-red-700 dark:text-red-300 rounded-lg flex items-center gap-1"
-                            >
-                              <TrashIcon size={14} />
-                              <span>Eliminar</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => sendTestEmail(campaign)}
-                              disabled={loading}
-                              className="px-3 py-1.5 text-xs bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-800/40 text-green-700 dark:text-green-300 rounded-lg flex items-center gap-1"
-                            >
-                              <MailIcon size={14} />
-                              <span>Enviar prueba</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => openEmailEditor(campaign._id || campaign.id, campaign.generatedEmail || campaign.emailContent || '', campaign)}
-                              className="px-3 py-1.5 text-xs bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:hover:bg-indigo-800/40 text-indigo-700 dark:text-indigo-300 rounded-lg flex items-center gap-1"
-                            >
-                              <EditIcon size={14} />
-                              <span>Editar email</span>
-                            </button>
-                            
-                            <Link
-                              to={`/campaign/${campaign._id || campaign.id}`}
-                              className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg flex items-center gap-1"
-                            >
-                              <InfoIcon size={14} />
-                              <span>Ver detalles</span>
-                            </Link>
-                          </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </>
+              <CampaignCard
+                key={campaign._id || campaign.id}
+                campaign={{ ...campaign, createdAt: campaign.createdAt || '' }}
+                onView={handleViewDetails}
+                onEdit={openEmailEditor}
+                onSendTest={openSendTestEmailModal}
+                onDelete={handleDelete}
+                renderStatusBadge={renderStatusBadge}
+              />
+            ))
           )}
-        </Card>
-        
-        {/* Características */}
-        <div id="features-section" ref={featuresRef} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card hoverable>
-            <div className="text-center">
-              <div className="mb-3 inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-indigo-600 dark:text-indigo-300 mb-1">Inteligencia Artificial</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Genera contenido personalizado optimizado para tu audiencia.</p>
-            </div>
-          </Card>
-          
-          <Card hoverable>
-            <div className="text-center">
-              <div className="mb-3 inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-blue-600 dark:text-blue-300 mb-1">Fácil de usar</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Interfaz intuitiva diseñada para maximizar tu productividad.</p>
-            </div>
-          </Card>
-          
-          <Card hoverable>
-            <div className="text-center">
-              <div className="mb-3 inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-purple-600 dark:text-purple-300 mb-1">Asistencia 24/7</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Obtén ayuda cuando la necesites a través de nuestro centro de soporte.</p>
-            </div>
-          </Card>
         </div>
-      </main>
-      
-      {/* Modal de edición de email */}
+        {/* Información Adicional */}
+        <InfoPanel />
+        {/* Tutorial interactivo */}
+        {tutorialActive && (
+          <TutorialGuide
+            steps={[ 
+              {
+                element: headerRef.current as Element,
+                popover: {
+                  title: '¡Bienvenido a tu Dashboard!',
+                  description: 'Aquí puedes gestionar todas tus campañas de email marketing.',
+                }
+              },
+              {
+                element: statsRef.current as Element,
+                popover: {
+                  title: 'Métricas y estadísticas',
+                  description: 'Visualiza el rendimiento de tus campañas con estas métricas clave.',
+                }
+              },
+              {
+                element: filtersRef.current as Element,
+                popover: {
+                  title: 'Filtros y búsqueda',
+                  description: 'Filtra tus campañas por nombre, estado o fecha para encontrar lo que buscas.',
+                }
+              },
+              {
+                element: campaignsListRef.current as Element,
+                popover: {
+                  title: 'Tus campañas',
+                  description: 'Aquí verás todas tus campañas. Puedes editarlas, enviar pruebas o ver detalles.',
+                }
+              },
+              {
+                element: createCampaignRef.current as Element,
+                popover: {
+                  title: 'Crea una nueva campaña',
+                  description: 'Haz clic aquí para comenzar a crear una nueva campaña con ayuda de IA.',
+                }
+              }
+            ]}
+            isActive={tutorialActive}
+            onComplete={() => {
+              setTutorialCompleted(true);
+              setTutorialActive(false);
+              localStorage.setItem('tutorialCompleted', 'true');
+            }}
+            onClose={() => setTutorialActive(false)}
+          />
+        )}
+        {/* Modales y componentes adicionales */}
       {showEmailEditor && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+          <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all duration-300">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Editar Email</h2>
               <button
@@ -663,12 +503,16 @@ const Dashboard: React.FC = () => {
                 </svg>
               </button>
             </div>
-            
             <div className="p-4 flex-1 overflow-auto">
               {/* Selector de plantillas */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Aplicar plantilla de diseño</label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="grid grid-cols-2 md:grid-cols-3 gap-3"
+                  >
                   <div 
                     onClick={() => setSelectedTemplate('')}
                     className={`cursor-pointer border rounded-lg p-3 text-center ${!selectedTemplate ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-700'}`}
@@ -676,7 +520,6 @@ const Dashboard: React.FC = () => {
                     <div className="text-sm font-medium mb-1">Original</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">Sin plantilla</div>
                   </div>
-                  
                   {emailTemplates.map(template => (
                     <div 
                       key={template.id}
@@ -687,7 +530,7 @@ const Dashboard: React.FC = () => {
                       <div className="text-xs text-gray-500 dark:text-gray-400">{template.description}</div>
                     </div>
                   ))}
-                </div>
+                  </motion.div>
               </div>
               
               {/* Barra de herramientas para editar */}
@@ -753,6 +596,57 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
+      {showSendEmailModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full p-6 transform transition-all duration-300">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Enviar Email de Prueba</h3>
+            
+            <form onSubmit={handleSendTestEmail}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Destinatario</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="correo@ejemplo.com"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-indigo-500 focus:border-indigo-500"
+                  value={recipient}
+                  onChange={(e) => setRecipient(e.target.value)}
+                />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Asunto (opcional)</label>
+                <input
+                  type="text"
+                  placeholder="Prueba: Nombre de la campaña"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-indigo-500 focus:border-indigo-500"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                />
+              </div>
+              
+              <div className="flex justify-end gap-2 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowSendEmailModal(false)}
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg"
+                >
+                  Cancelar
+                </button>
+                
+                <button
+                  type="submit"
+                  disabled={sendingEmail || !recipient}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50"
+                >
+                  {sendingEmail ? 'Enviando...' : 'Enviar Email'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      </div>
     </div>
   );
 };

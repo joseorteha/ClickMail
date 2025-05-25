@@ -112,77 +112,73 @@ const Updates = () => {
   };
 
   return (
-    <StaticPageLayout 
-      title="Actualizaciones de ClickMail" 
-      subtitle="Mantente al día con las últimas mejoras y nuevas características"
-    >
-      <div className="relative border-l-2 border-blue-200 dark:border-blue-900 pl-8 ml-4">
-        {updates.map((update, index) => (
-          <div key={index} className="mb-12 relative">
-            {/* Marcador en la línea de tiempo */}
-            <div className="absolute -left-10 top-0 w-5 h-5 rounded-full bg-blue-500 border-4 border-white dark:border-gray-900"></div>
-            
-            {/* Contenido de la actualización */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <div className="p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                    {update.title}
-                  </h2>
-                  <div className="flex items-center mt-2 sm:mt-0">
-                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${getBadgeColor(update.type)}`}>
-                      {getTypeLabel(update.type)}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                      v{update.version}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <StaticPageLayout 
+        title="Actualizaciones de ClickMail" 
+        subtitle="Mantente al día con las últimas mejoras y nuevas características"
+      >
+        <div className="relative border-l-2 border-blue-200 dark:border-blue-900 pl-8 ml-4">
+          {updates.map((update, index) => (
+            <div key={index} className="mb-12 relative">
+              {/* Marcador en la línea de tiempo */}
+              <div className="absolute -left-10 top-0 w-5 h-5 rounded-full bg-blue-500 border-4 border-white dark:border-gray-900"></div>
+              {/* Contenido de la actualización */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                      {update.title}
+                    </h2>
+                    <div className="flex items-center mt-2 sm:mt-0">
+                      <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${getBadgeColor(update.type)}`}>
+                        {getTypeLabel(update.type)}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                        v{update.version}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-300 mb-3">
+                    {update.description}
+                  </p>
+                  <div className="mb-4">
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cambios destacados:</h3>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {update.details.map((detail, i) => (
+                        <li key={i} className="text-gray-600 dark:text-gray-400 text-sm">{detail}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {update.date}
                     </span>
                   </div>
                 </div>
-                
-                <p className="text-gray-600 dark:text-gray-300 mb-3">
-                  {update.description}
-                </p>
-                
-                <div className="mb-4">
-                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cambios destacados:</h3>
-                  <ul className="list-disc pl-5 space-y-1">
-                    {update.details.map((detail, i) => (
-                      <li key={i} className="text-gray-600 dark:text-gray-400 text-sm">{detail}</li>
-                    ))}
-                  </ul>
-                </div>
-                
-                <div className="text-right">
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {update.date}
-                  </span>
-                </div>
               </div>
             </div>
-          </div>
-        ))}
-        
-        {/* Inicio de la línea de tiempo */}
-        <div className="absolute -left-10 bottom-0 w-5 h-5 rounded-full bg-blue-300 dark:bg-blue-800 border-4 border-white dark:border-gray-900"></div>
-      </div>
-      
-      <div className="mt-12 text-center">
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
-          ¿Tienes alguna sugerencia para mejorar ClickMail?
-        </p>
-        <a 
-          href="https://feedback.clickmail.com" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Enviar sugerencia
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
-        </a>
-      </div>
-    </StaticPageLayout>
+          ))}
+          {/* Inicio de la línea de tiempo */}
+          <div className="absolute -left-10 bottom-0 w-5 h-5 rounded-full bg-blue-300 dark:bg-blue-800 border-4 border-white dark:border-gray-900"></div>
+        </div>
+        <div className="mt-12 text-center">
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            ¿Tienes alguna sugerencia para mejorar ClickMail?
+          </p>
+          <a 
+            href="https://feedback.clickmail.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Enviar sugerencia
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </a>
+        </div>
+      </StaticPageLayout>
+    </div>
   );
 };
 

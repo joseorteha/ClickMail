@@ -128,111 +128,109 @@ const Resources = () => {
   ];
 
   return (
-    <StaticPageLayout 
-      title="Centro de Recursos" 
-      subtitle="Todo lo que necesitas para dominar el email marketing"
-    >
-      {/* Recursos destacados */}
-      <div className="mb-16">
-        <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Recursos destacados</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {featuredResources.map(resource => (
-            <div key={resource.id} className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all border border-gray-200 dark:border-gray-700 group">
-              <div className="h-48 bg-blue-100 dark:bg-blue-900/20 relative">
-                {/* Aquí iría la imagen real en producción */}
-                <div className="absolute inset-0 flex items-center justify-center text-blue-400 dark:text-blue-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                  </svg>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <StaticPageLayout 
+        title="Centro de Recursos" 
+        subtitle="Todo lo que necesitas para dominar el email marketing"
+      >
+        {/* Recursos destacados */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Recursos destacados</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {featuredResources.map(resource => (
+              <div key={resource.id} className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all border border-gray-200 dark:border-gray-700 group">
+                <div className="h-48 bg-blue-100 dark:bg-blue-900/20 relative">
+                  <div className="absolute inset-0 flex items-center justify-center text-blue-400 dark:text-blue-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                  </div>
+                  <div className="absolute top-3 left-3 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded-full uppercase tracking-wide">
+                    {resource.type}
+                  </div>
                 </div>
-                
-                {/* Tipo de recurso */}
-                <div className="absolute top-3 left-3 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded-full uppercase tracking-wide">
-                  {resource.type}
+                <div className="p-5">
+                  <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {resource.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                    {resource.description}
+                  </p>
+                  <div className="mt-auto">
+                    <a 
+                      href={`/resources/${resource.type}/${resource.id}`}
+                      className="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300"
+                    >
+                      Acceder
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </a>
+                  </div>
                 </div>
               </div>
-              
-              <div className="p-5">
-                <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                  {resource.title}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                  {resource.description}
-                </p>
-                <div className="mt-auto">
-                  <a 
-                    href={`/resources/${resource.type}/${resource.id}`}
-                    className="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300"
-                  >
-                    Acceder
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </a>
+            ))}
+          </div>
+        </div>
+        
+        {/* Categorías de recursos */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {resourceCategories.map(category => (
+            <div 
+              key={category.id} 
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-start">
+                <div className="flex-shrink-0 text-blue-600 dark:text-blue-400">
+                  {category.icon}
+                </div>
+                <div className="ml-5">
+                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{category.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{category.description}</p>
+                  
+                  <ul className="space-y-2">
+                    {category.links.map((link, index) => (
+                      <li key={index}>
+                        <Link 
+                          to={link.url}
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm flex items-center"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                          {link.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>
           ))}
         </div>
-      </div>
-      
-      {/* Categorías de recursos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {resourceCategories.map(category => (
-          <div 
-            key={category.id} 
-            className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-start">
-              <div className="flex-shrink-0 text-blue-600 dark:text-blue-400">
-                {category.icon}
-              </div>
-              <div className="ml-5">
-                <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{category.title}</h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{category.description}</p>
-                
-                <ul className="space-y-2">
-                  {category.links.map((link, index) => (
-                    <li key={index}>
-                      <Link 
-                        to={link.url}
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm flex items-center"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                        {link.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+        
+        {/* CTA de recursos personalizados */}
+        <div className="mt-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-8 text-white shadow-lg">
+          <div className="flex flex-col md:flex-row items-center">
+            <div className="md:flex-1 mb-6 md:mb-0">
+              <h2 className="text-2xl font-bold mb-3">¿Necesitas ayuda personalizada?</h2>
+              <p className="text-blue-100 max-w-2xl">
+                Nuestros expertos en email marketing pueden ayudarte a crear una estrategia personalizada 
+                para tus necesidades específicas. Agenda una consulta gratuita hoy.
+              </p>
+            </div>
+            <div>
+              <a 
+                href="/support/contact?subject=Consulta%20Personalizada"
+                className="inline-block px-6 py-3 bg-white text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition shadow-md"
+              >
+                Reservar consulta gratuita
+              </a>
             </div>
           </div>
-        ))}
-      </div>
-      
-      {/* CTA de recursos personalizados */}
-      <div className="mt-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-8 text-white shadow-lg">
-        <div className="flex flex-col md:flex-row items-center">
-          <div className="md:flex-1 mb-6 md:mb-0">
-            <h2 className="text-2xl font-bold mb-3">¿Necesitas ayuda personalizada?</h2>
-            <p className="text-blue-100 max-w-2xl">
-              Nuestros expertos en email marketing pueden ayudarte a crear una estrategia personalizada 
-              para tus necesidades específicas. Agenda una consulta gratuita hoy.
-            </p>
-          </div>
-          <div>
-            <a 
-              href="/support/contact?subject=Consulta%20Personalizada"
-              className="inline-block px-6 py-3 bg-white text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition shadow-md"
-            >
-              Reservar consulta gratuita
-            </a>
-          </div>
         </div>
-      </div>
-    </StaticPageLayout>
+      </StaticPageLayout>
+    </div>
   );
 };
 

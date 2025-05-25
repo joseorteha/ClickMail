@@ -271,7 +271,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 py-6 sm:py-12 px-3 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 sm:py-12 px-3 sm:px-6 lg:px-8">
       <div className="w-full max-w-4xl mx-auto">
         {/* Notificación */}
         {notification && (
@@ -413,7 +413,7 @@ const Profile = () => {
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Seguridad</h2>
                 
-                <div className="bg-gray-50 dark:bg-gray-750 p-4 rounded-lg">
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                   <h3 className="text-lg font-medium mb-4">Cambiar contraseña</h3>
                   
                   <form onSubmit={handlePasswordChange} className="space-y-4">
@@ -491,7 +491,7 @@ const Profile = () => {
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Preferencias</h2>
                 
-                <div className="bg-gray-50 dark:bg-gray-750 p-4 rounded-lg">
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                   <h3 className="text-lg font-medium mb-4">Apariencia</h3>
                   
                   <div className="flex items-center justify-between">
@@ -508,7 +508,7 @@ const Profile = () => {
                   </div>
                 </div>
                 
-                <div className="mt-6 bg-gray-50 dark:bg-gray-750 p-4 rounded-lg">
+                <div className="mt-6 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                   <h3 className="text-lg font-medium mb-4">Notificaciones</h3>
                   
                   <div className="space-y-4">
