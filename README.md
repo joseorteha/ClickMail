@@ -2,6 +2,21 @@
   <img src="./public/logo1.svg" alt="ClickMail Logo" width="200" />
   <h1>ClickMail 📧</h1>
   <p><strong>Email Marketing Impulsado por IA</strong></p>
+
+  [![React](https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+  [![Vite](https://img.shields.io/badge/Vite-5.0-purple?style=for-the-badge&logo=vite)](https://vitejs.dev/)
+  [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.0-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+  [![Netlify](https://img.shields.io/badge/Netlify-Deployed-00C7B7?style=for-the-badge&logo=netlify)](https://click-mail.netlify.app/)
+
+  <p>
+    <a href="https://click-mail.netlify.app">Demo</a> •
+    <a href="#características">Características</a> •
+    <a href="#tecnologías">Tecnologías</a> •
+    <a href="#instalación">Instalación</a> •
+    <a href="#estructura">Estructura</a> •
+    <a href="#despliegue">Despliegue</a>
+  </p>
 </div>
 
 ## 📋 Descripción
@@ -100,8 +115,6 @@ Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](L
 ## 🤝 Contribuciones
 
 Las contribuciones son bienvenidas. Por favor, abre un issue primero para discutir los cambios que te gustaría hacer.
-
-
 
 ---
 ⭐️ Si te gusta este proyecto, ¡déjale una estrella en GitHub!
