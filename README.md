@@ -184,8 +184,8 @@ Crea un archivo `.env` basándote en `.env.sample`:
 
 ```env
 # 🗄️ Base de Datos
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/clickmail
-MONGODB_TEST_URI=mongodb+srv://username:password@cluster.mongodb.net/clickmail-test
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/
+MONGODB_TEST_URI=mongodb+srv://username:password@cluster.mongodb.net
 
 # 🔐 Autenticación
 JWT_SECRET=tu_jwt_secret_super_seguro_aqui
