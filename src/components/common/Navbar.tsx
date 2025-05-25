@@ -102,21 +102,21 @@ const Navbar = () => {
             {!user ? (
               <>
                 <Link 
-                  to="/#features" 
+                  to="/product/features" 
                   className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   Características
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
                 </Link>
                 <Link 
-                  to="/#pricing" 
+                  to="/product/pricing" 
                   className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   Precios
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
                 </Link>
                 <Link 
-                  to="/#testimonials" 
+                  to="/testimonials" 
                   className="relative group text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   Testimonios
@@ -187,6 +187,15 @@ const Navbar = () => {
                           Configuración
                         </Link>
                         <Link 
+                          to="/email-settings" 
+                          className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                          </svg>
+                          Configuración de Email
+                        </Link>
+                        <Link 
                           to="/billing" 
                           className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                         >
@@ -233,21 +242,21 @@ const Navbar = () => {
             {!user ? (
               <>
                 <Link 
-                  to="/#features" 
+                  to="/product/features" 
                   className="block py-3 px-3 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
                   onClick={() => setOpen(false)}
                 >
                   Características
                 </Link>
                 <Link 
-                  to="/#pricing" 
+                  to="/product/pricing" 
                   className="block py-3 px-3 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
                   onClick={() => setOpen(false)}
                 >
                   Precios
                 </Link>
                 <Link 
-                  to="/#testimonials" 
+                  to="/testimonials" 
                   className="block py-3 px-3 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
                   onClick={() => setOpen(false)}
                 >

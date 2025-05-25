@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { generateTestEmail } from '../../services/campaignService';
 import { useToast } from '../../context/ToastContext';
+import LoadingButton from '../ui/LoadingButton';
+import { generateTestEmail } from '../../services/campaignService';
 
 interface Props {
   value: any;
@@ -28,7 +29,8 @@ const Step3Preview = ({ value, onChange, onBack, onError, onSubmit, loading, onG
   const [copied, setCopied] = useState(false);
   const [sent, setSent] = useState(false);
   const [html, setHtml] = useState(value.emailContent || defaultEmailHTML);
-  const { showToast } = useToast();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { showToast, showBrowserNotification, requestNotificationPermission } = useToast();
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(html);
@@ -70,10 +72,17 @@ const Step3Preview = ({ value, onChange, onBack, onError, onSubmit, loading, onG
         <h3 className="text-lg font-medium text-blue-700 dark:text-blue-300 mb-2">¿Necesitas generar contenido de email?</h3>
         <p className="text-blue-600 dark:text-blue-400 mb-3 text-sm">Usa nuestra IA para crear automáticamente un email de marketing basado en tu campaña.</p>
         
-        {/* Botón que hace petición directa con DATOS REALES */}
-        <button 
+        {/* Botón que hace petición directa con DATOS REALES con retroalimentación visual */}
+        <LoadingButton
+          isLoading={isGenerating}
           onClick={async () => {
             try {
+              // Solicitar permisos para notificaciones al navegador
+              await requestNotificationPermission();
+              
+              // Activar estado de carga
+              setIsGenerating(true);
+              
               // Mostrar que estamos procesando
               showToast('Por favor espera mientras generamos tu email personalizado.', 'info', 'Generando email con TUS DATOS...');
               
@@ -94,35 +103,64 @@ const Step3Preview = ({ value, onChange, onBack, onError, onSubmit, loading, onG
                 setHtml(data.email);
                 onChange({ ...value, emailContent: data.email });
                 
-                // Notificación con el resultado
-                showToast('Se ha actualizado la vista previa con tu nuevo contenido.', 'success', '¡Email generado exitosamente con TUS DATOS!');
+                // Notificación con el resultado (solo toast estilizado)
+                showToast('Se ha actualizado la vista previa con tu nuevo contenido.', 'success', '¡Email generado exitosamente!');
               } else {
                 throw new Error('La respuesta no contiene un email válido');
               }
             } catch (error) {
               console.error('Error generando email:', error);
               showToast('Revisa la consola para más detalles o intenta de nuevo.', 'error', 'Error generando email');
+            } finally {
+              // Desactivar estado de carga al finalizar (éxito o error)
+              setIsGenerating(false);
             }
           }}
-          className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition flex items-center justify-center gap-2"
+          variant="primary"
+          loadingText="Generando email..."
+          className="w-full"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-          Generar Email (Método Directo)
-        </button>
-        
-        {/* Botón original (si existe la función) */}
-        {onGenerateEmail && (
-          <button 
-            onClick={onGenerateEmail}
-            className="w-full mt-2 py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition flex items-center justify-center gap-2"
-          >
+          <div className="flex items-center justify-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            Generar Email (Método Original)
-          </button>
+            Generar Email con IA
+          </div>
+        </LoadingButton>
+        
+        {/* Botón original mejorado (si existe la función) */}
+        {onGenerateEmail && (
+          <LoadingButton 
+            isLoading={loading}
+            onClick={async () => {
+              try {
+                // Mostrar notificación estilizada (igual que el primer botón)
+                showToast('Por favor espera mientras generamos tu email personalizado.', 'info', 'Generando email con IA...');
+                
+                // Llamar a la función original
+                onGenerateEmail();
+                
+                // Dado que no sabemos cuándo termina la función original, esperamos un tiempo y mostramos
+                // una notificación estilizada similar a la del primer botón
+                setTimeout(() => {
+                  showToast('Se ha actualizado la vista previa con tu nuevo contenido.', 'success', '¡Email generado exitosamente!');
+                }, 3000);
+              } catch (error) {
+                console.error('Error generando email:', error);
+                showToast('Revisa la consola para más detalles o intenta de nuevo.', 'error', 'Error generando email');
+              }
+            }}
+            variant="success"
+            loadingText="Procesando..."
+            className="w-full mt-2"
+          >
+            <div className="flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Generar con Método Alternativo
+            </div>
+          </LoadingButton>
         )}
       </div>
       
