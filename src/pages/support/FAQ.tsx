@@ -1,8 +1,45 @@
 import React, { useState } from 'react';
 import StaticPageLayout from '../../components/common/StaticPageLayout';
 
+interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+  link?: string;
+  category: string;
+}
+
 const FAQ = () => {
-  // ... existing code ...
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
+  const [openFAQs, setOpenFAQs] = useState<string[]>([]);
+
+  const categories = ['Todos', 'Cuenta', 'Pagos', 'Campañas', 'Técnico'];
+
+  const faqs: FAQ[] = [
+    {
+      id: '1',
+      question: '¿Cómo puedo crear mi primera campaña?',
+      answer: 'Para crear tu primera campaña, inicia sesión en tu cuenta y haz clic en "Nueva Campaña". Sigue el asistente paso a paso para configurar tu campaña.',
+      category: 'Campañas'
+    },
+    // ... Agrega más FAQs aquí
+  ];
+
+  const filteredFAQs = faqs.filter(faq => {
+    const matchesSearch = faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         faq.answer.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'Todos' || faq.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const toggleFAQ = (id: string) => {
+    setOpenFAQs(prev => 
+      prev.includes(id) 
+        ? prev.filter(faqId => faqId !== id)
+        : [...prev, id]
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

@@ -6,6 +6,25 @@ import { useToast } from '../context/ToastContext';
 import Card from '../components/ui/Card';
 import axios from 'axios';
 
+interface EmailConfig {
+  provider: string;
+  domain: string;
+  apiKey: string;
+  fromEmail: string;
+  fromName: string;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data?: T;
+}
+
+interface TestAccount {
+  user: string;
+  pass: string;
+}
+
 const EmailSettings: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -15,8 +34,7 @@ const EmailSettings: React.FC = () => {
   const [verifying, setVerifying] = useState(false);
   const [hasExistingConfig, setHasExistingConfig] = useState(false);
   
-  // Estado para el formulario (simplificado para Ethereal Email)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<EmailConfig>({
     provider: 'smtp',
     domain: 'smtp.ethereal.email', // Valor fijo para Ethereal
     apiKey: '', // Ahora funciona como contraseña
@@ -36,7 +54,7 @@ const EmailSettings: React.FC = () => {
           return;
         }
         
-        const response = await axios.get(
+        const response = await axios.get<ApiResponse<EmailConfig>>(
           `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/email-provider`,
           {
             headers: {
@@ -45,22 +63,15 @@ const EmailSettings: React.FC = () => {
           }
         );
         
-        if (response.data.success) {
-          const { data } = response.data;
+        if (response.data.success && response.data.data) {
           setFormData({
-            provider: data.provider,
-            domain: data.domain,
-            apiKey: '', // No mostramos la API key por seguridad
-            fromEmail: data.fromEmail,
-            fromName: data.fromName
+            ...response.data.data,
+            apiKey: '' // No mostramos la API key por seguridad
           });
           setHasExistingConfig(true);
         }
       } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status !== 404) {
-          console.error('Error al cargar configuración de email:', error);
-          showToast('Error al cargar la configuración de email', 'error');
-        }
+        handleError(error);
       }
     };
     
@@ -82,7 +93,6 @@ const EmailSettings: React.FC = () => {
     
     setVerifying(true);
     try {
-      // Obtener el token del localStorage
       const token = localStorage.getItem('token');
       
       if (!token) {
@@ -91,7 +101,7 @@ const EmailSettings: React.FC = () => {
         return;
       }
       
-      const response = await axios.post(
+      const response = await axios.post<ApiResponse<{ testAccount?: TestAccount }>>(
         `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/verify-email`, 
         {
           apiKey: formData.apiKey || 'test-password',
@@ -106,7 +116,6 @@ const EmailSettings: React.FC = () => {
       );
       
       if (response.data.success) {
-        // Mostrar información sobre la cuenta de prueba Ethereal
         const testAccount = response.data.data?.testAccount;
         if (testAccount) {
           showToast(`¡Configuración verificada! Se usará una cuenta de prueba: ${testAccount.user}`, 'success');
@@ -117,8 +126,7 @@ const EmailSettings: React.FC = () => {
         showToast('No se pudo verificar la configuración', 'error');
       }
     } catch (error) {
-      console.error('Error al verificar configuración de email:', error);
-      showToast('Error en la configuración. Se usará una cuenta de prueba de Ethereal Email.', 'warning');
+      handleError(error);
     } finally {
       setVerifying(false);
     }
@@ -134,7 +142,6 @@ const EmailSettings: React.FC = () => {
     
     setLoading(true);
     try {
-      // Obtener el token del localStorage
       const token = localStorage.getItem('token');
       
       if (!token) {
@@ -143,7 +150,7 @@ const EmailSettings: React.FC = () => {
         return;
       }
       
-      const response = await axios.post(
+      const response = await axios.post<ApiResponse<EmailConfig>>(
         `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/email-provider`, 
         formData,
         {
@@ -160,8 +167,7 @@ const EmailSettings: React.FC = () => {
         showToast(response.data.message || 'Error al guardar configuración', 'error');
       }
     } catch (error) {
-      console.error('Error al guardar configuración:', error);
-      showToast('Error al guardar la configuración', 'error');
+      handleError(error);
     } finally {
       setLoading(false);
     }
@@ -174,7 +180,6 @@ const EmailSettings: React.FC = () => {
     
     setLoading(true);
     try {
-      // Obtener el token del localStorage
       const token = localStorage.getItem('token');
       
       if (!token) {
@@ -183,7 +188,7 @@ const EmailSettings: React.FC = () => {
         return;
       }
       
-      const response = await axios.delete(
+      const response = await axios.delete<ApiResponse<void>>(
         `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/email-provider`,
         {
           headers: {
@@ -198,18 +203,31 @@ const EmailSettings: React.FC = () => {
           provider: 'mailgun',
           domain: '',
           apiKey: '',
-          fromEmail: '',
+          fromEmail: user?.email || '',
           fromName: user?.name || '',
         });
         setHasExistingConfig(false);
       } else {
-        showToast(response.data.message || 'Error al eliminar configuración', 'error');
+        showToast(response.data.message || 'Error al eliminar la configuración', 'error');
       }
     } catch (error) {
-      console.error('Error al eliminar configuración:', error);
-      showToast('Error al eliminar la configuración', 'error');
+      handleError(error);
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const handleError = (error: unknown) => {
+    if (error && typeof error === 'object' && 'isAxiosError' in error) {
+      const axiosError = error as { response?: { status: number }, message?: string };
+      if (axiosError.response?.status === 404) {
+        return;
+      }
+      console.error('Error:', axiosError.message || 'Error desconocido');
+      showToast(axiosError.message || 'Error en la operación', 'error');
+    } else {
+      console.error('Error desconocido:', error);
+      showToast('Error inesperado', 'error');
     }
   };
   
