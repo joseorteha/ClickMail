@@ -80,6 +80,87 @@ export const deleteCampaign = async (campaignId: string, token?: string) => {
   return res.json();
 }; 
 
+// Función para enviar un email de prueba a un destinatario específico
+export const sendTestEmail = async (campaignId: string, options: { recipient?: string, recipients?: string[], subject?: string } = {}, token?: string) => {
+  const jwt = getToken(token);
+  if (!jwt) throw new Error('No autenticado');
+  
+  try {
+    const res = await fetch(`${API_URL}/${campaignId}/send-test`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwt}`
+      },
+      body: JSON.stringify(options)
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Error al enviar email de prueba');
+    }
+    
+    return res.json();
+  } catch (error) {
+    console.error('Error enviando email de prueba:', error);
+    throw error;
+  }
+};
+
+// Enviar email a múltiples destinatarios
+export const sendBulkEmail = async (campaignId: string, recipients: string[], subject?: string, token?: string) => {
+  const jwt = getToken(token);
+  if (!jwt) throw new Error('No autenticado');
+  
+  try {
+    const res = await fetch(`${API_URL}/${campaignId}/send-bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwt}`
+      },
+      body: JSON.stringify({ recipients, subject })
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Error al enviar emails');
+    }
+    
+    return res.json();
+  } catch (error) {
+    console.error('Error enviando emails masivos:', error);
+    throw error;
+  }
+};
+
+// Procesar archivo de contactos
+export const processContactsFile = async (fileContent: string, token?: string) => {
+  const jwt = getToken(token);
+  if (!jwt) throw new Error('No autenticado');
+  
+  try {
+    const res = await fetch(`${API_URL}/process-contacts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwt}`
+      },
+      body: JSON.stringify({ fileContent })
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Error al procesar archivo de contactos');
+    }
+    
+    return res.json();
+  } catch (error) {
+    console.error('Error procesando archivo de contactos:', error);
+    throw error;
+  }
+};
+
 // Función para generar un email de prueba (sin autenticación ni ID)
 export const generateTestEmail = async () => {
   console.log('Llamando a la ruta de prueba para generar email...');

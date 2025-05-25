@@ -1,7 +1,7 @@
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth`;
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export const register = async (data: { name: string; email: string; password: string }) => {
-  const res = await fetch(`${API_URL}/register`, {
+  const res = await fetch(`${API_URL}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -12,7 +12,7 @@ export const register = async (data: { name: string; email: string; password: st
 
 export async function login(data: { email: string; password: string }) {
   // Enviar credenciales como JSON
-  const res = await fetch(`${API_URL}/login`, {
+  const res = await fetch(`${API_URL}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -25,7 +25,7 @@ export async function login(data: { email: string; password: string }) {
 };
 
 export const updateProfile = async (data: { name: string; email: string }, token: string) => {
-  const res = await fetch(`${API_URL}/profile`, {
+  const res = await fetch(`${API_URL}/api/auth/profile`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
